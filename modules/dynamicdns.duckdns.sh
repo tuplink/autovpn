@@ -15,6 +15,5 @@ dynamic_dns_duckdns(){
     ERROR "DUCKDOMAIN, DUCKKEY and/or TORRENTUSER not set"
     check_config "DUCKKEY" "DUCKDNS Key"
     check_config "DUCKDOMAIN" "DUCKDNS Domain (bob.duckdns.org)"
-    check_config "TORRENTUSER" "User rTorrent runs as"
   fi
 }
