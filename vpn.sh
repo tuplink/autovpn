@@ -23,6 +23,7 @@ LOCKFILE="$SELFPWD/vpn.pid"			#Script lock
 VPNIF="tun0"					#VPN interface
 VPNCF="$SELFPWD/openvpn/PIA/US East.ovpn"	#VPN key
 VPNROUTE="$SELFPWD/openvpn/vpn-route"		#VPN route script
+VPNPASS="$SELFPWD/openvpn/user.txt"		#VPN Password
 HOSTFILE="/etc/hosts"				#hostname file
 HOST="vpniphost"				#hostname for local lookups
 ADSCRIPT="$SELFDIR/pihole/gravity.sh"		#PiHole Script
@@ -330,7 +331,7 @@ while true; do
       fi
       INFO "Starting VPN"
 #     openvpn --config "$VPNCF"
-      openvpn --config "$VPNCF" --route-nopull --route-up "$VPNROUTE" --script-security 2
+      openvpn --config "$VPNCF"--auth-user-pass "$VPNPASS" --route-nopull --route-up "$VPNROUTE" --script-security 2
       #WAIT FOR CONNECTION
       SLEEP 15
       if [ "$FWSET" != "1" ] ; then
