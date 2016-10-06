@@ -21,9 +21,9 @@ SELFDIR="$( cd "$( dirname "$SELF" )" && pwd )"
 #Settings
 LOCKFILE="$SELFPWD/vpn.pid"			#Script lock
 VPNIF="tun0"					#VPN interface
-VPNCF="$SELFPWD/openvpn/PIA/US East.ovpn"	#VPN key
-VPNROUTE="$SELFPWD/openvpn/vpn-route"		#VPN route script
-VPNPASS="$SELFPWD/openvpn/user.txt"		#VPN Password
+VPNCF="$SELFDIR/openvpn/PIA/US East.ovpn"	#VPN key
+VPNROUTE="$SELFDIR/openvpn/vpn-route"		#VPN route script
+VPNPASS="$SELFDIR/openvpn/user.txt"		#VPN Password
 HOSTFILE="/etc/hosts"				#hostname file
 HOST="vpniphost"				#hostname for local lookups
 ADSCRIPT="$SELFDIR/pihole/gravity.sh"		#PiHole Script
