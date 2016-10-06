@@ -48,7 +48,7 @@ fi
 # After setting defaults, check if there's local overrides
 if [[ -r ../../pihole.conf ]];then
     echo "::: Local calibration requested..."
-        source ../../pihole.conf
+        source pihole.conf
 fi
 
 

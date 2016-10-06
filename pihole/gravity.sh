@@ -40,8 +40,16 @@ function helpFunc()
 }
 
 
+# After setting defaults, check if there's local overrides
+if [[ -r pihole.conf ]];then
+    echo "::: Local calibration requested..."
+        source pihole.conf
+fi
+
+
 if [[ -f ${piholeIPfile} ]];then
     # If the file exists, it means it was exported from the installation script and we should use that value instead of detecting it in this script
+    echo "::: Custom IP Found"
     piholeIP=$(cat ${piholeIPfile})
     #rm $piholeIPfile
 else
@@ -54,12 +62,6 @@ fi
 if [[ -f ${piholeIPv6file} ]];then
     # If the file exists, then the user previously chose to use IPv6 in the automated installer
     piholeIPv6=$(ip -6 route get 2001:4860:4860::8888 | awk -F " " '{ for(i=1;i<=NF;i++) if ($i == "src") print $(i+1) }')
-fi
-
-# After setting defaults, check if there's local overrides
-if [[ -r pihole.conf ]];then
-    echo "::: Local calibration requested..."
-        source pihole.conf
 fi
 
 ###########################
