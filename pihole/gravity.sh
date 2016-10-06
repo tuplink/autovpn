@@ -346,6 +346,6 @@ gravity_Schwarzchild
 gravity_advanced
 gravity_hostFormat
 gravity_blackbody
-gravity_Whitelist
-gravity_Blacklist
+#gravity_Whitelist
+#gravity_Blacklist
 gravity_reload
