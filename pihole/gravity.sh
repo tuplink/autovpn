@@ -296,6 +296,8 @@ function gravity_reload() {
 	echo " done!"
         if [ ${etchosts} == "1" ] ; then
 		${SUDO} cp ${adList} /etc/hosts
+	elif [ ${etchosts} == "2" ] ; then
+		echo "::: Do nothing with hosts"
 	else
         	# Reload hosts file
         	echo ":::"
