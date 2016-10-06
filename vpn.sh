@@ -48,8 +48,6 @@ SCRIPT_LOG=/dev/null				#path to log to
 #/Settings
 if [[ -r extra.sh ]] ; then
   source extra.sh
-else
-  touch extra.sh
 fi
 #/Settings
 HOSTNAME=$(hostname)
@@ -205,9 +203,8 @@ fi
 if [ -e $LOCKFILE ]; then
   # A lockfile exists... Lets check to see if it is still valid
   PID=`cat $LOCKFILE`
-  if kill -0 &>1 > /dev/null $PID; then
-    # Still Valid... lets let it be...
-    if [[ $1 = "-f" ]]; then
+  if [ -e /proc/$PID ] ; then
+    if [[ $1 = "-f" ]] ; then
       INFO "Killed running script"
       kill -9 $PID
     else
