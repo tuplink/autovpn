@@ -24,5 +24,17 @@ setup_vpn(){
   echo "a reboot will be required"
   echo ":::VPN SETUP FINISHED::::"
 }
+
+setup_sndmasq(){
+  apt-get install dnsmasq
+  echo "addn-hosts=$SELFDIR/pihole/gravity.list" >> /etc/dnsmasq.conf
+}
+setup_all(){
+  setup_vpn
+  setup_dnsmasq
+}
+
 # add MENU SYSTEM
+
+
 exit 1

@@ -19,7 +19,7 @@ SELF=${BASH_SOURCE[0]}
 SELFDIR="$( cd "$( dirname "$SELF" )" && pwd )"
 ##
 #Settings
-LOCKFILE="$SELFPWD/vpn.pid"			#Script lock
+LOCKFILE="$SELFDIR/vpn.pid"			#Script lock
 VPNIF="tun0"					#VPN interface
 VPNCF="$SELFDIR/openvpn/PIA/US East.ovpn"	#VPN key
 VPNROUTE="$SELFDIR/openvpn/vpn-route"		#VPN route script
@@ -331,7 +331,7 @@ while true; do
       fi
       INFO "Starting VPN"
 #     openvpn --config "$VPNCF"
-      openvpn --config "$VPNCF" --auth-user-pass "$VPNPASS" --route-nopull --route-up "$VPNROUTE" --script-security 2
+      openvpn --config "$VPNCF" --writepid "$SELFDIR/openvpn.pid" --auth-user-pass "$VPNPASS" --route-nopull --route-up "$VPNROUTE" --script-security 2
       #WAIT FOR CONNECTION
       SLEEP 15
       if [ "$FWSET" != "1" ] ; then
