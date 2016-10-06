@@ -331,7 +331,7 @@ while true; do
       fi
       INFO "Starting VPN"
 #     openvpn --config "$VPNCF"
-      openvpn --config "$VPNCF"--auth-user-pass "$VPNPASS" --route-nopull --route-up "$VPNROUTE" --script-security 2
+      openvpn --config "$VPNCF" --auth-user-pass "$VPNPASS" --route-nopull --route-up "$VPNROUTE" --script-security 2
       #WAIT FOR CONNECTION
       SLEEP 15
       if [ "$FWSET" != "1" ] ; then
