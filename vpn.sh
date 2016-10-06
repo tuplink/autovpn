@@ -25,6 +25,7 @@ VPNCF="$SELFPWD/openvpn/PIA/US East.ovpn"	#VPN key
 VPNROUTE="$SELFPWD/openvpn/vpn-route"		#VPN route script
 HOSTFILE="/etc/hosts"				#hostname file
 HOST="vpniphost"				#hostname for local lookups
+ADSCRIPT="$SELFDIR/pihole/gravity.sh"		#PiHole Script
 TORRENTUSER="ubuntu"				#rTorrent User
 TORRENTPORT="57225"				#rTorrent port
 ENABLEDHT="1"					#torrent DHT 1 yes 2 no
@@ -258,7 +259,7 @@ while true; do
       if [ "$ADS" != $(date +%j) ] ; then
         ADS=$(date +%j)
         INFO "Building AD Blocks"
-        /bin/bash $SELFDIR/pihole/gravity.sh > /dev/null 2>&1 &
+        /bin/bash $ADSCRIPT > /dev/null 2>&1 &
       fi
       VPNIP=$(ifconfig $VPNIF 2>/dev/null | awk '/inet addr/{print substr($2,6)}')
       if [[ -z "$VPNIP" ]]; then
