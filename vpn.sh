@@ -13,7 +13,6 @@
 ##
 ## $VPNCF must contain (daemon) and (auth-user-pass PASSWORD FILE) Options and all filenames must be
 ## full paths PASSWORD FILE is 2 lines username and password
-
 ##STATTIC STUFF
 SELF=${BASH_SOURCE[0]}
 SELFDIR="$( cd "$( dirname "$SELF" )" && pwd )"
@@ -21,7 +20,7 @@ SELFDIR="$( cd "$( dirname "$SELF" )" && pwd )"
 #Settings
 LOCKFILE="$SELFDIR/vpn.pid"			#Script lock
 VPNIF="tun0"					#VPN interface
-VPNCF="$SELFDIR/openvpn/PIA/US East.ovpn"	#VPN key
+VPNCF="$SELFDIR/openvpn/PIA/CA Montreal.ovpn"	#VPN config File
 VPNROUTE="$SELFDIR/openvpn/vpn-route"		#VPN route script
 VPNPASS="$SELFDIR/openvpn/user.txt"		#VPN Password
 HOSTFILE="/etc/hosts"				#hostname file
@@ -40,7 +39,7 @@ SSHREMOTEPORT="19999"				#external port for tunnle
 APIF="wlan9"					#Hotspot Interface
 LANIF="eth0"					#LAN Interface
 APTOVPN="1"					#1 Hotspot over vpn 0 Hotspot over internet
-WIFIIF="wlan0"					#wifi for connecting to open wifi
+WIFIIF="ra0"					#wifi for connecting to open wifi
 WIFISSID="xfinitywifi"				#SSID to connect to
 DISPLAYSHOW="14"				#Log entrys to show
 LOGLEVEL="2"					#1 ERROR 2 INFO 3 DEBUG
@@ -110,6 +109,7 @@ function DISPLAY(){
   echo "i) Increse log            d) Decrese Log"
   HR
   CENTERTEXT "Logging set to $LOGLEVEL  Uptime: $UPTIME"
+  CENTERTEXT "Forwarded Port: $PORT"
   HR
   CENTERTEXT "LOG($DISPLAYSHOW) $SLEEPMSG"
   HR
@@ -295,6 +295,24 @@ while true; do
       else
         DEBUG "Reverse tunnel is up"
       fi
+      ## PIA Port forward every hour
+      DEBUG "Checking if we need to run port forward script"
+      if [ "$PORTFOR" != $(date +%H) ] ; then
+        OLDPORT=$PORT
+        PORT=$($SELFDIR/portforward/port_forward.sh -f $VPNPASS -i $VPNIF -s)
+        PORTFOR=$(date +%H)
+        if [[ $PORT =~ ^-?[0-9]+$ ]] ; then
+          INFO "Inbound port is $PORT"
+          if [ "$OLDPORT" != "$PORT"] ; then
+            INFO "Port Number changed"
+            ETHIP=$(ifconfig $LANIF | awk '/inet / {print $2}' | awk 'BEGIN { FS = ":" } {print $(NF)}')
+            DEBUG "Adding new rule for inbound port"
+            iptables -t nat -A PREROUTING -p tcp --dport $PORT -i $LANIF -j DNAT --to $ETHIP:80
+          fi
+        else
+          INFO "Port not valid"
+        fi
+      fi
       ##  RTORRENT CHECK ##
       DEBUG "Check if rtrrent is up"
       TESTSCREEN=$(su $TORRENTUSER -c 'screen -ls | egrep "[0-9]+.$SCREENNAME"')
@@ -328,7 +346,7 @@ while true; do
       fi
       INFO "Starting VPN"
 #     openvpn --config "$VPNCF"
-      openvpn --config "$VPNCF" --writepid "$SELFDIR/openvpn.pid" --auth-user-pass "$VPNPASS" --route-nopull --route-up "$VPNROUTE" --script-security 2
+      openvpn --daemon --config "$VPNCF" --writepid "$SELFDIR/openvpn.pid" --auth-user-pass "$VPNPASS" --route-nopull --route-up "$VPNROUTE" --script-security 2
       #WAIT FOR CONNECTION
       SLEEP 15
       if [ "$FWSET" != "1" ] ; then
