@@ -314,10 +314,11 @@ while true; do
       ## PIA Port forward every hour
       DEBUG "Checking if we need to run port forward script"
       if [ "$PORTFOR" != $(date +%H) ] ; then
-        PORT=$($SELFDIR/portforward/port_forward.sh -f $VPNPASS -i $VPNIF -s)
+        INFO "$VPNPASS $VPNIF"
+        PORT=$(su $TORRENTUSER -c "$SELFDIR/portforward/port_forward.sh -f $VPNPASS -i $VPNIF -s")
         PORTFOR=$(date +%H)
         if [[ $PORT =~ ^-?[0-9]+$ ]] ; then
-          INFO "Inbound port is $PORT"
+          DEBUG "Inbound port is $PORT"
           if [ "$PORT" != "$OLDPORT" ] || [ -z $OLDPORT ] ; then
             INFO "Port Number changed"
             DEBUG "Adding new rule for inbound port"
@@ -332,7 +333,7 @@ while true; do
             INFO "Port is same as old"
           fi
         else
-          INFO "Port not valid"
+          INFO "Port($PORT) not valid"
         fi
       fi
       # DUCKDNS Update
