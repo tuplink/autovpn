@@ -34,7 +34,7 @@ MOUNTCHECK="/media/torrent"     		#Storage Device
 SSHKEY=""					#tunnle key
 SSHHOST=""					#tunnle host
 SSHREMOTEUSER=""				#tunnle user
-SSHLOCALPORT="80"				#internal port for tunnle
+SSHLOCALPORT="22"				#internal port for tunnle
 SSHREMOTEPORT="19999"				#external port for tunnle
 APIF="wlan9"					#Hotspot Interface
 LANIF="eth0"					#LAN Interface
@@ -53,6 +53,18 @@ if [[ -r extra.sh ]] ; then
   source extra.sh
 fi
 #/Settings
+
+
+while [ "`echo $1 | cut -c1`" = "-" ]; do
+  case "$1" in
+    "--quiet"|"-q"           ) QUIET=1;shift 1;;
+    "--force"|"-f"           ) FORCE=1;shift 1;;
+    *                       ) echo "ERROR: Invalid option: \""$1"\""; exit 1;;
+  esac
+done
+
+
+
 HOSTNAME=$(hostname)
 UPTIME=$(uptime | sed -E 's/^[^,]*up *//; s/, *[[:digit:]]* users.*//; s/min/minutes/; s/([[:digit:]]+):0?([[:digit:]]+)/\1 hours, \2 minutes/')
 ## LOGGING FUNCTIONS
@@ -75,6 +87,7 @@ else
 fi
 
 function DISPLAY(){
+if [ "$QUIET" != "1" ] ;then
   clear
   local NEW="$1"
   if [ "$NEW" != "" ] ; then
@@ -101,7 +114,7 @@ function DISPLAY(){
     MSG[20]=$NEW
   fi
   COLS=$(tput cols)
-  HALFCOLS=$[$COLS/2]
+  HALFCOLS=$($COLS/2)
   HR
   CENTERTEXT "$USER@$HOSTNAME:$SELFPWD/$SELF"
   HR
@@ -121,10 +134,10 @@ function DISPLAY(){
   DISPLAYSTART=$[$DISPLAYNUM-$DISPLAYSHOW]
   printf '%s\n' "${MSG[@]:$DISPLAYSTART:$DISPLAYSHOW}"
   echo "Please select and option"
+fi
 }
 
 SLEEP(){
-#  DEBUG "Taking a $1 second nap"
   while [ $sleep -lt $1 ] ; do
     sleep 1
     DISPLAY
@@ -142,8 +155,8 @@ SYSTEM(){
   local function_name="${FUNCNAME[1]}"
   local msg="$1"
   timeAndDate=`date "+%m/%d/%y %H:%M:%S"`
-  DISPLAY "$(tput setaf 5)[$timeAndDate] [SYSTEM] $msg$(tput setaf 7)"
-  echo "[$timeAndDate] [SYSTEM] $msg" > $SCRIPT_LOG
+  DISPLAY "[$timeAndDate] [SYSTEM] $msg$"
+  echo "[$timeAndDate] [SYSTEM] $msg" >> $SCRIPT_LOG
   logger"[$timeAndDate] [VPN.sh] $msg"
 }
 
@@ -152,8 +165,8 @@ ERROR(){
     local function_name="${FUNCNAME[1]}"
     local msg="$1"
     timeAndDate=`date "+%m/%d/%y %H:%M:%S"`
-    DISPLAY "$(tput setaf 1)[$timeAndDate] [ERROR]  $msg$(tput setaf 7)"
-    echo "[$timeAndDate] [ERROR]  $msg" > $SCRIPT_LOG
+    DISPLAY "[$timeAndDate] [ERROR]  $msg"
+    echo "[$timeAndDate] [ERROR]  $msg" >> $SCRIPT_LOG
   fi
 }
 INFO(){
@@ -161,7 +174,7 @@ INFO(){
     local function_name="${FUNCNAME[1]}"
     local msg="$1"
     timeAndDate=`date "+%m/%d/%y %H:%M:%S"`
-    DISPLAY "$(tput setaf 7)[$timeAndDate] [INFO]   $msg$(tput setaf 7)"
+    DISPLAY "[$timeAndDate] [INFO]   $msg"
     echo "[$timeAndDate] [INFO]   $msg" >> $SCRIPT_LOG
   fi
 }
@@ -170,7 +183,7 @@ DEBUG(){
     local function_name="${FUNCNAME[1]}"
     local msg="$1"
     timeAndDate=`date "+%m/%d/%y %H:%M:%S"`
-    DISPLAY "$(tput setaf 3)[$timeAndDate] [DEBUG]  $msg$(tput setaf 7)"
+    DISPLAY "[$timeAndDate] [DEBUG]  $msg"
     echo "[$timeAndDate] [DEBUG]  $msg" >> $SCRIPT_LOG
   fi
 }
@@ -191,24 +204,24 @@ CENTERTEXT(){
 
 
 ##CHECK IF USER IS ROOT
-if [[ $EUID -eq 0 ]];then
-	INFO "User is ROOT"
-else
-	if [ -x "$(command -v sudo)" ];then
-                INFO "Switching to root"
-                sudo su -c "$SELF -f"
-		exit 1
-	else
-		ERROR "Please install sudo or run this script as root."
-		exit 1
-	fi
-fi
+#if [[ $EUID -eq 0 ]];then
+#	INFO "User is ROOT"
+#else
+#	if [ -x "$(command -v sudo)" ];then
+#                INFO "Switching to root"
+#                sudo su -c "$SELF "
+#		exit 1
+#	else
+#		ERROR "Please install sudo or run this script as root."
+#		exit 1
+#	fi
+#fi
 ##CHECK IF RUNNING ALREADY
 if [ -e $LOCKFILE ]; then
   # A lockfile exists... Lets check to see if it is still valid
   PID=`cat $LOCKFILE`
   if [ -e /proc/$PID ] ; then
-    if [[ $1 = "-f" ]] ; then
+    if [[ "$FORCE" == "1" ]] ; then
       INFO "Killed running script"
       kill -9 $PID
     else
@@ -302,18 +315,21 @@ while true; do
       ## PIA Port forward every hour
       DEBUG "Checking if we need to run port forward script"
       if [ "$PORTFOR" != $(date +%H) ] ; then
-        OLDPORT=$PORT
         PORT=$($SELFDIR/portforward/port_forward.sh -f $VPNPASS -i $VPNIF -s)
         PORTFOR=$(date +%H)
         if [[ $PORT =~ ^-?[0-9]+$ ]] ; then
           INFO "Inbound port is $PORT"
-          if [ "$OLDPORT" != "$PORT"] ; then
+          if [ "$PORT" != "$OLDPORT" ] || [ -z $OLDPORT ] ; then
             INFO "Port Number changed"
-            ETHIP=$(ifconfig $LANIF | awk '/inet / {print $2}' | awk 'BEGIN { FS = ":" } {print $(NF)}')
             DEBUG "Adding new rule for inbound port"
-#            iptables -t nat -A PREROUTING -i $LANIF -p tcp --dport 80 -j REDIRECT --to-port $PORT
-#            iptables -t nat -A PREROUTING -p tcp --dport $PORT -i $LANIF -j DNAT --to $ETHIP:80
-             iptables -t nat -A PREROUTING -p tcp --dport 47933 -i tun0 -j DNAT --to 172.24.1.1:80
+            iptables -D INPUT -i $VPNIF -j DROP
+            iptables -t nat -D PREROUTING -i $VPNIF -p tcp --dport $OLDPORT -j REDIRECT --to-port 80
+            iptables -t nat -A PREROUTING -i $VPNIF -p tcp --dport $PORT -j REDIRECT --to-port 80
+            # block everything else incoming on $VPNIF
+            iptables -A INPUT -i $VPNIF -j DROP
+            OLDPORT=$PORT
+          else
+            INFO "Port is same as old"
           fi
         else
           INFO "Port not valid"
@@ -326,6 +342,12 @@ while true; do
           DYNDNS=$(date +%H)
           DNSUPDATE=$(su ubuntu -c "echo -e 'GET http://www.duckdns.org/update?domains=tuplink.duckdns.org&token=29b559ec-76cf-44fa-9739-7669cd572773&ip= HTTP/1.0\n\n' | nc -w 2 www.duckdns.org 80 | tail -n 1")
         fi
+      fi
+      #ASYNC Routing enable
+      if [ -z $ASYNC ] ; then
+        ASYNC=1
+        INFO "Keeping inbound traffic on interface"
+        ip rule add from $VPNIP/32 table ubuntu priority 100
       fi
       ##  RTORRENT CHECK ##
       DEBUG "Check if rtrrent is up"
@@ -402,8 +424,6 @@ while true; do
           iptables -t raw -I PREROUTING -i $VPNIF -p udp --dport 6881 -j NOTRACK
           iptables -t raw -I OUTPUT -o $VPNIF -p udp --sport 6881 -j NOTRACK
         fi
-        # block everything else incoming on $VPNIF
-        iptables -A INPUT -i $VPNIF -j DROP
         ## ALLOW ALL $LANIF
         iptables -A INPUT -i $LANIF -j ACCEPT
         iptables -A OUTPUT -o $LANIF -j ACCEPT
