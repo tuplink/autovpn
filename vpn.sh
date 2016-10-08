@@ -44,6 +44,10 @@ WIFISSID="xfinitywifi"				#SSID to connect to
 DISPLAYSHOW="14"				#Log entrys to show
 LOGLEVEL="2"					#1 ERROR 2 INFO 3 DEBUG
 SCRIPT_LOG=/dev/null				#path to log to
+DUCKKEY=""
+DUCKDOMAIN=""
+
+
 #/Settings
 if [[ -r extra.sh ]] ; then
   source extra.sh
@@ -251,7 +255,7 @@ while true; do
   DEBUG "Checking VPN status"
   if [ -f /sys/class/net/$VPNIF/operstate ]; then
     INFO "VPN is active"
-    if su ubuntu -c 'echo -e "GET http://google.com HTTP/1.0\n\n" | nc -w 2 google.com 80 > /dev/null 2>&1' ; then
+    if su $TORRENTUSER -c 'echo -e "GET http://google.com HTTP/1.0\n\n" | nc -w 2 google.com 80 > /dev/null 2>&1' ; then
       DEBUG "VPN has internet"
       DEBUG "Check ad lists"
       if [ "$ADS" != $(date +%j) ] ; then
@@ -307,10 +311,20 @@ while true; do
             INFO "Port Number changed"
             ETHIP=$(ifconfig $LANIF | awk '/inet / {print $2}' | awk 'BEGIN { FS = ":" } {print $(NF)}')
             DEBUG "Adding new rule for inbound port"
-            iptables -t nat -A PREROUTING -p tcp --dport $PORT -i $LANIF -j DNAT --to $ETHIP:80
+#            iptables -t nat -A PREROUTING -i $LANIF -p tcp --dport 80 -j REDIRECT --to-port $PORT
+#            iptables -t nat -A PREROUTING -p tcp --dport $PORT -i $LANIF -j DNAT --to $ETHIP:80
+             iptables -t nat -A PREROUTING -p tcp --dport 47933 -i tun0 -j DNAT --to 172.24.1.1:80
           fi
         else
           INFO "Port not valid"
+        fi
+      fi
+      # DUCKDNS Update
+      if [ -n $DUCKKEY ] ;then
+        if [ "$DYNDNS" != $(date +%H) ] ; then
+          INFO "Updating Dynamic DNS"
+          DYNDNS=$(date +%H)
+          DNSUPDATE=$(su ubuntu -c "echo -e 'GET http://www.duckdns.org/update?domains=tuplink.duckdns.org&token=29b559ec-76cf-44fa-9739-7669cd572773&ip= HTTP/1.0\n\n' | nc -w 2 www.duckdns.org 80 | tail -n 1")
         fi
       fi
       ##  RTORRENT CHECK ##
