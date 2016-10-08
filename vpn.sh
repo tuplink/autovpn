@@ -64,7 +64,6 @@ while [ "`echo $1 | cut -c1`" = "-" ]; do
 done
 
 
-
 HOSTNAME=$(hostname)
 UPTIME=$(uptime | sed -E 's/^[^,]*up *//; s/, *[[:digit:]]* users.*//; s/min/minutes/; s/([[:digit:]]+):0?([[:digit:]]+)/\1 hours, \2 minutes/')
 ## LOGGING FUNCTIONS
@@ -325,6 +324,7 @@ while true; do
             iptables -D INPUT -i $VPNIF -j DROP
             iptables -t nat -D PREROUTING -i $VPNIF -p tcp --dport $OLDPORT -j REDIRECT --to-port 80
             iptables -t nat -A PREROUTING -i $VPNIF -p tcp --dport $PORT -j REDIRECT --to-port 80
+            iptables -A INPUT -i tun0 -p tcp --dport 80 -m state --state NEW,ESTABLISHED -j ACCEPT
             # block everything else incoming on $VPNIF
             iptables -A INPUT -i $VPNIF -j DROP
             OLDPORT=$PORT
@@ -337,10 +337,10 @@ while true; do
       fi
       # DUCKDNS Update
       if [ -n $DUCKKEY ] ;then
-        if [ "$DYNDNS" != $(date +%H) ] ; then
+        if [ "$DYNDNS" != "$(date +%H)" ] ; then
           INFO "Updating Dynamic DNS"
           DYNDNS=$(date +%H)
-          DNSUPDATE=$(su ubuntu -c "echo -e 'GET http://www.duckdns.org/update?domains=tuplink.duckdns.org&token=29b559ec-76cf-44fa-9739-7669cd572773&ip= HTTP/1.0\n\n' | nc -w 2 www.duckdns.org 80 | tail -n 1")
+          DNS=$(su ubuntu -c "echo -e 'GET http://www.duckdns.org/update?domains=$DUCKDOMAIN&token=$DUCKKEY&ip= HTTP/1.0\n\n' | nc -w 2 www.duckdns.org 80")
         fi
       fi
       #ASYNC Routing enable
