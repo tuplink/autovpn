@@ -46,7 +46,7 @@ LOGLEVEL="2"					#1 ERROR 2 INFO 3 DEBUG
 SCRIPT_LOG=/dev/null				#path to log to
 DUCKKEY=""
 DUCKDOMAIN=""
-
+PBKEY=""                                        #Pushbullet key
 
 #/Settings
 if [[ -r extra.sh ]] ; then
@@ -316,8 +316,8 @@ while true; do
       if [ "$PORTFOR" != $(date +%H) ] ; then
         INFO "$VPNPASS $VPNIF"
         PORT=$(su $TORRENTUSER -c "$SELFDIR/portforward/port_forward.sh -f $VPNPASS -i $VPNIF -s")
-        PORTFOR=$(date +%H)
         if [[ $PORT =~ ^-?[0-9]+$ ]] ; then
+          PORTFOR=$(date +%H)
           DEBUG "Inbound port is $PORT"
           if [ "$PORT" != "$OLDPORT" ] || [ -z $OLDPORT ] ; then
             INFO "Port Number changed"
@@ -326,9 +326,12 @@ while true; do
             iptables -t nat -D PREROUTING -i $VPNIF -p tcp --dport $OLDPORT -j REDIRECT --to-port 80
             iptables -t nat -A PREROUTING -i $VPNIF -p tcp --dport $PORT -j REDIRECT --to-port 80
             iptables -A INPUT -i tun0 -p tcp --dport 80 -m state --state NEW,ESTABLISHED -j ACCEPT
-            # block everything else incoming on $VPNIF
             iptables -A INPUT -i $VPNIF -j DROP
             OLDPORT=$PORT
+            if [ -n $PBKEY ] ; then
+              INFO "Sending PushBullet Notification"
+              curl -u $PBKEY: -X POST https://api.pushbullet.com/v2/pushes --header 'Content-Type: application/json' --data-binary '{"type": "note", "title": "Port Forwarding", "body": "Port is $PORT"}'> /dev/null
+            fi
           else
             INFO "Port is same as old"
           fi
@@ -425,6 +428,8 @@ while true; do
           iptables -t raw -I PREROUTING -i $VPNIF -p udp --dport 6881 -j NOTRACK
           iptables -t raw -I OUTPUT -o $VPNIF -p udp --sport 6881 -j NOTRACK
         fi
+        ## block everything else incoming on $VPNIF
+        iptables -A INPUT -i $VPNIF -j DROP
         ## ALLOW ALL $LANIF
         iptables -A INPUT -i $LANIF -j ACCEPT
         iptables -A OUTPUT -o $LANIF -j ACCEPT
