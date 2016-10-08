@@ -29,9 +29,35 @@ setup_sndmasq(){
   apt-get install dnsmasq
   echo "addn-hosts=$SELFDIR/pihole/gravity.list" >> /etc/dnsmasq.conf
 }
+setup_initd(){
+  cp autovpn_rc /etc/init.d/autovpn
+  chmod 755 /etc/init.d/autovpn
+  update-rc.d autovpn defaults
+}
+setup_systemd(){
+  echo "[Unit]
+    Description=AutoVPN daemon
+    After=network.target
+
+    [Service]
+    Type=simple
+    KillMode=none
+    WorkingDirectory=$SELFDIR/
+    ExecStart=$SELFDIR/vpn.sh -f
+    ExecReload=$SELFDIR/vpn.sh -f
+    KillMode=process
+    Restart=on-failure
+
+    [Install]
+    WantedBy=default.target" > /etc/systemd/system/autovpn.service
+    chmod 664 /etc/systemd/system/autovpn.service
+    systemctl daemon-reload
+    systemctl start autovpn.service
+}
 setup_all(){
   setup_vpn
   setup_dnsmasq
+  setup_systemd
 }
 
 # add MENU SYSTEM
