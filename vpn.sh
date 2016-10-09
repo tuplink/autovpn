@@ -39,14 +39,13 @@ SSHKEY=""					#tunnle key
 SSHHOST=""					#tunnle host
 SSHREMOTEUSER=""				#tunnle user
 SSHLOCALPORT="22"				#internal port for tunnle
-SSHREMOTEPORT="19999"				#external port for tunnle
-
-#RUTING STUFF
+SSHREMOTEPORT="23456"				#external port for tunnle
+#ROUTING STUFF
 APIF="wlan9"					#Hotspot Interface
 LANIF="eth0"					#LAN Interface
 APTOVPN="1"					#1 Hotspot over vpn 0 Hotspot over internet
 #AUTO CONNECT TO OPEN WIFI
-WIFIIF="ra0"					#wifi for connecting to open wifi
+WIFIIF="wlan0"					#wifi for connecting to open wifi
 WIFISSID="xfinitywifi"				#SSID to connect to
 #DYNAMIC DNS (DUCKDNS)
 DUCKKEY=""					#DUCKDNS Key
@@ -193,19 +192,20 @@ DEBUG(){
 }
 
 HR(){
-  COLS=$(tput cols)
-  printf "%0*d\n" "$COLS"
+#  COLS=$(tput cols)
+#  printf "%0*d\n" "$COLS"
+  echo "---------------------"
 }
 
 CENTERTEXT(){
-  COLS=$(tput cols)
-  LENGTH=${#1}
-  CENTER=$(expr $COLS / 2)
-  HALFSTRING=$(expr $LENGTH / 2 )
-  PAD=$(expr $CENTER + $HALFSTRING)
-  printf "%${PAD}s\n" "$1"
+#  COLS=$(tput cols)
+#  LENGTH=${#1}
+#  CENTER=$(expr $COLS / 2)
+#  HALFSTRING=$(expr $LENGTH / 2 )
+#  PAD=$(expr $CENTER + $HALFSTRING)
+#  printf "%${PAD}s\n" "$1"
+  echo "$1"
 }
-
 
 ##CHECK IF USER IS ROOT
 #if [[ $EUID -eq 0 ]];then
@@ -321,7 +321,7 @@ while true; do
       ## PIA Port forward every hour
       DEBUG "Checking if we need to run port forward script"
       if [ "$PORTFOR" != $(date +%H) ] ; then
-        PORT=$(su $TORRENTUSER -c "$SELFDIR/portforward/port_forward.sh -f $VPNPASS -i $VPNIF -s")
+        PORT=$($SELFDIR/portforward/port_forward.sh -f $VPNPASS -i $VPNIF -s)
         if [[ $PORT =~ ^-?[0-9]+$ ]] ; then
           PORTFOR=$(date +%H)
           DEBUG "Inbound port is $PORT"

@@ -3,9 +3,9 @@
 # Author: Vivek Gite < vivek @ nixcraft . com > under GPL v2.0+
 # ---------------------------------------------------------------------------
 # capture CTRL+C, CTRL+Z and quit singles using the trap
-trap '' SIGINT
-trap ''  SIGQUIT
-trap '' SIGTSTP
+#trap '' SIGINT
+#trap ''  SIGQUIT
+#trap '' SIGTSTP
 # display message and pause 
 
 EXTIPHOST=""
@@ -29,8 +29,8 @@ do
         DOWN=$(numfmt --to=iec-i --suffix=b $DOWN)
         UP=$(xmlrpc http://127.0.0.1:80/RPC2/ throttle.global_up.rate | grep integer | cut -d ":" -f 2 | sed -e 's/^[[:space:]]*//')
         UP=$(numfmt --to=iec-i --suffix=b $UP)
-        export PUBIP=$(sudo echo -e "GET http://$EXTIPHOST/$EXTIPFILE HTTP/1.0\n\n" | nc -w 2 $EXTIPHOST 80 | tail -n 1)
-	export VPNIP=$(su ubuntu -c "echo -e 'GET http://$EXTIPHOST/$EXTIPFILE HTTP/1.0\n\n' | nc -w 2 $EXTIPHOST 80 | tail -n 1")
+        PUBIP=$(sudo echo -e "GET http://$EXTIPHOST/$EXTIPFILE HTTP/1.0\n\n" | nc -w 2 $EXTIPHOST 80 | tail -n 1)
+        VPNIP=$(su ubuntu -c "echo -e 'GET http://$EXTIPHOST/$EXTIPFILE HTTP/1.0\n\n' | nc -w 2 $EXTIPHOST 80 | tail -n 1")
         # show menu
 	clear
         echo "---------------------------------------"

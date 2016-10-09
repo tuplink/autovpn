@@ -191,6 +191,7 @@ if [ "$2" != "" ] ; then
 fi
 
 if [ -z "${USER}" ] || [ -z "${PASSWORD}" ]; then
+  echo "USER NOT FOUND"
   usage_and_exit 0
 fi
 

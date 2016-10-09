@@ -43,8 +43,8 @@ setup_systemd(){
     Type=simple
     KillMode=none
     WorkingDirectory=$SELFDIR/
-    ExecStart=$SELFDIR/vpn.sh -f
-    ExecReload=$SELFDIR/vpn.sh -f
+    ExecStart=$SELFDIR/vpn.sh -q -f
+    ExecReload=$SELFDIR/vpn.sh -q -f
     KillMode=process
     Restart=on-failure
 
