@@ -22,13 +22,16 @@ LOCKFILE="$SELFDIR/vpn.pid"			#Script lock
 DISPLAYSHOW="14"                                #Log entrys to show
 LOGLEVEL="2"                                    #1 ERROR 2 INFO 3 DEBUG
 SCRIPT_LOG=/dev/null                            #path to log to
+#VPN
 VPNIF="tun0"
 VPNCF="$SELFDIR/openvpn/PIA/CA Montreal.ovpn"	#VPN config File
 VPNROUTE="$SELFDIR/openvpn/vpn-route"		#VPN route script
 VPNPASS="$SELFDIR/openvpn/user.txt"		#VPN Password
 HOSTFILE="/etc/hosts"				#hostname file
 HOST="vpniphost"				#hostname for local lookups
+#AD BLOCKING
 ADSCRIPT="$SELFDIR/pihole/gravity.sh"		#PiHole Script
+#RTORRENT
 TORRENTUSER="ubuntu"				#rTorrent User
 TORRENTPORT="57225"				#rTorrent port
 ENABLEDHT="1"					#torrent DHT 1 yes 2 no
@@ -58,7 +61,22 @@ if [[ -r extra.sh ]] ; then
 fi
 #/Settings
 
+#START OF SCRIPT
 
+
+##CHECK IF USER IS ROOT
+if [[ $EUID -ne 0 ]];then
+  if [ -x "$(command -v sudo)" ];then
+    echo "Switching to root"
+    sudo $SELF $@
+    exit 1
+  else
+    echo "Please install sudo or run this script as root."
+    exit 1
+  fi
+fi
+
+#GET SCRIPT OPTIONS
 while [ "`echo $1 | cut -c1`" = "-" ]; do
   case "$1" in
     "--quiet"|"-q"           ) QUIET=1;shift 1;;
@@ -68,78 +86,75 @@ while [ "`echo $1 | cut -c1`" = "-" ]; do
 done
 
 
+
 HOSTNAME=$(hostname)
 UPTIME=$(uptime | sed -E 's/^[^,]*up *//; s/, *[[:digit:]]* users.*//; s/min/minutes/; s/([[:digit:]]+):0?([[:digit:]]+)/\1 hours, \2 minutes/')
 ## LOGGING FUNCTIONS
 touch $SCRIPT_LOG
 if [ "$LOGLEVEL" == "1" ] ; then
-  echo "LOGGING set to ERROR"
   ERRORLOG=1
   INFOLOG=0
   DEBUG=0
 elif [ "$LOGLEVEL" == "2" ] ; then
-  echo "LOGGING set to INFO"
   ERRORLOG=1
   INFOLOG=1
   DEBUG=0
 else
-  echo "LOGGING set to DEBUG"
   ERRORLOG=1
   INFOLOG=1
   DEBUGLOG=1
 fi
 
 function DISPLAY(){
-if [ "$QUIET" != "1" ] ;then
-  clear
-  local NEW="$1"
-  if [ "$NEW" != "" ] ; then
-    MSG[0]=${MSG[1]}
-    MSG[1]=${MSG[2]}
-    MSG[2]=${MSG[3]}
-    MSG[3]=${MSG[4]}
-    MSG[4]=${MSG[5]}
-    MSG[5]=${MSG[6]}
-    MSG[6]=${MSG[7]}
-    MSG[7]=${MSG[8]}
-    MSG[8]=${MSG[9]}
-    MSG[9]=${MSG[10]}
-    MSG[10]=${MSG[11]}
-    MSG[11]=${MSG[12]}
-    MSG[12]=${MSG[13]}
-    MSG[13]=${MSG[14]}
-    MSG[14]=${MSG[15]}
-    MSG[15]=${MSG[16]}
-    MSG[16]=${MSG[17]}
-    MSG[17]=${MSG[18]}
-    MSG[18]=${MSG[19]}
-    MSG[19]=${MSG[20]}
-    MSG[20]=$NEW
+  if [ "$QUIET" != "1" ] ;then
+    clear
+    local NEW="$1"
+    if [ "$NEW" != "" ] ; then
+      MSG[0]=${MSG[1]}
+      MSG[1]=${MSG[2]}
+      MSG[2]=${MSG[3]}
+      MSG[3]=${MSG[4]}
+      MSG[4]=${MSG[5]}
+      MSG[5]=${MSG[6]}
+      MSG[6]=${MSG[7]}
+      MSG[7]=${MSG[8]}
+      MSG[8]=${MSG[9]}
+      MSG[9]=${MSG[10]}
+      MSG[10]=${MSG[11]}
+      MSG[11]=${MSG[12]}
+      MSG[12]=${MSG[13]}
+      MSG[13]=${MSG[14]}
+      MSG[14]=${MSG[15]}
+      MSG[15]=${MSG[16]}
+      MSG[16]=${MSG[17]}
+      MSG[17]=${MSG[18]}
+      MSG[18]=${MSG[19]}
+      MSG[19]=${MSG[20]}
+      MSG[20]=$NEW
+    fi
+    COLS=$(tput cols)
+    HALFCOLS=$($COLS/2)
+    HR
+    CENTERTEXT "$USER@$HOSTNAME:$SELFPWD/$SELF"
+    HR
+    echo "1) Restart VPN Script     6) Set INFO loggging"
+    echo "2) Restart OpenVPN        7) Set ERROR loggging"
+    echo "3) Restart SSH Tunnel     8)"
+    echo "4) Restart rTorrent       9) Update Ad Hosts"
+    echo "5) Set DEBUG loggging     x) Exit"
+    echo "i) Increse log            d) Decrese Log"
+    HR
+    CENTERTEXT "Logging set to $LOGLEVEL  Uptime: $UPTIME"
+    CENTERTEXT "Forwarded Port: $PORT"
+    HR
+    CENTERTEXT "LOG($DISPLAYSHOW) $SLEEPMSG"
+    HR
+    DISPLAYNUM=${#MSG[@]}
+    DISPLAYSTART=$[$DISPLAYNUM-$DISPLAYSHOW]
+    printf '%s\n' "${MSG[@]:$DISPLAYSTART:$DISPLAYSHOW}"
+    echo "Please select and option"
   fi
-  COLS=$(tput cols)
-  HALFCOLS=$($COLS/2)
-  HR
-  CENTERTEXT "$USER@$HOSTNAME:$SELFPWD/$SELF"
-  HR
-  echo "1) Restart VPN Script     6) Set INFO loggging"
-  echo "2) Restart OpenVPN        7) Set ERROR loggging"
-  echo "3) Restart SSH Tunnel     8)"
-  echo "4) Restart rTorrent       9) Update Ad Hosts"
-  echo "5) Set DEBUG loggging     x) Exit"
-  echo "i) Increse log            d) Decrese Log"
-  HR
-  CENTERTEXT "Logging set to $LOGLEVEL  Uptime: $UPTIME"
-  CENTERTEXT "Forwarded Port: $PORT"
-  HR
-  CENTERTEXT "LOG($DISPLAYSHOW) $SLEEPMSG"
-  HR
-  DISPLAYNUM=${#MSG[@]}
-  DISPLAYSTART=$[$DISPLAYNUM-$DISPLAYSHOW]
-  printf '%s\n' "${MSG[@]:$DISPLAYSTART:$DISPLAYSHOW}"
-  echo "Please select and option"
-fi
 }
-
 SLEEP(){
   while [ $sleep -lt $1 ] ; do
     sleep 1
@@ -153,7 +168,6 @@ SLEEP(){
   done
   sleep=0
 }
-
 SYSTEM(){
   local function_name="${FUNCNAME[1]}"
   local msg="$1"
@@ -190,13 +204,11 @@ DEBUG(){
     echo "[$timeAndDate] [DEBUG]  $msg" >> $SCRIPT_LOG
   fi
 }
-
 HR(){
 #  COLS=$(tput cols)
 #  printf "%0*d\n" "$COLS"
   echo "---------------------"
 }
-
 CENTERTEXT(){
 #  COLS=$(tput cols)
 #  LENGTH=${#1}
@@ -207,19 +219,6 @@ CENTERTEXT(){
   echo "$1"
 }
 
-##CHECK IF USER IS ROOT
-#if [[ $EUID -eq 0 ]];then
-#	INFO "User is ROOT"
-#else
-#	if [ -x "$(command -v sudo)" ];then
-#                INFO "Switching to root"
-#                sudo su -c "$SELF "
-#		exit 1
-#	else
-#		ERROR "Please install sudo or run this script as root."
-#		exit 1
-#	fi
-#fi
 ##CHECK IF RUNNING ALREADY
 if [ -e $LOCKFILE ]; then
   # A lockfile exists... Lets check to see if it is still valid
@@ -234,10 +233,6 @@ if [ -e $LOCKFILE ]; then
     fi
   fi
 fi
-#STATIC VAR#
-#FWSET=0
-
-
 
 ## SCRIPT LOCK
 echo $$ > $LOCKFILE
