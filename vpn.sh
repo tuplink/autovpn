@@ -19,7 +19,10 @@ SELFDIR="$( cd "$( dirname "$SELF" )" && pwd )"
 ##
 #Settings
 LOCKFILE="$SELFDIR/vpn.pid"			#Script lock
-VPNIF="tun0"					#VPN interface
+DISPLAYSHOW="14"                                #Log entrys to show
+LOGLEVEL="2"                                    #1 ERROR 2 INFO 3 DEBUG
+SCRIPT_LOG=/dev/null                            #path to log to
+VPNIF="tun0"
 VPNCF="$SELFDIR/openvpn/PIA/CA Montreal.ovpn"	#VPN config File
 VPNROUTE="$SELFDIR/openvpn/vpn-route"		#VPN route script
 VPNPASS="$SELFDIR/openvpn/user.txt"		#VPN Password
@@ -31,21 +34,23 @@ TORRENTPORT="57225"				#rTorrent port
 ENABLEDHT="1"					#torrent DHT 1 yes 2 no
 SCREENNAME="torrent"            		#Screen session name for rtorrent to run in
 MOUNTCHECK="/media/torrent"     		#Storage Device
+#REVERSE TUNNEL ACCESS 
 SSHKEY=""					#tunnle key
 SSHHOST=""					#tunnle host
 SSHREMOTEUSER=""				#tunnle user
 SSHLOCALPORT="22"				#internal port for tunnle
 SSHREMOTEPORT="19999"				#external port for tunnle
+
+#RUTING STUFF
 APIF="wlan9"					#Hotspot Interface
 LANIF="eth0"					#LAN Interface
 APTOVPN="1"					#1 Hotspot over vpn 0 Hotspot over internet
+#AUTO CONNECT TO OPEN WIFI
 WIFIIF="ra0"					#wifi for connecting to open wifi
 WIFISSID="xfinitywifi"				#SSID to connect to
-DISPLAYSHOW="14"				#Log entrys to show
-LOGLEVEL="2"					#1 ERROR 2 INFO 3 DEBUG
-SCRIPT_LOG=/dev/null				#path to log to
-DUCKKEY=""
-DUCKDOMAIN=""
+#DYNAMIC DNS (DUCKDNS)
+DUCKKEY=""					#DUCKDNS Key
+DUCKDOMAIN=""					#DUCKDNS DOMAIN (bob.duckdns.org)
 PBKEY=""                                        #Pushbullet key
 
 #/Settings
@@ -299,17 +304,19 @@ while true; do
         fi
       fi
       ##  SSH TUNNEL ##
-      DEBUG "Checking status of Reverse Tunnel"
-      SSHPID=$(pgrep -f 'ssh -o ConnectTimeout=10')
-      if [ -z "$SSHPID" ]; then
-        INFO "Starting SSH Tunnel"
-        if ssh -o ConnectTimeout=10 -o ExitOnForwardFailure=yes -fN -i $SSHKEY $SSHREMOTEUSER@$SSHHOST -R $SSHREMOTEPORT:*:$SSHLOCALPORT  > /dev/null 2>&1; then
-          INFO "SSH tunnel established"
+      if [ -n $SSHKEY ] ; then
+        DEBUG "Checking status of Reverse Tunnel"
+        SSHPID=$(pgrep -f 'ssh -o ConnectTimeout=10')
+        if [ -z "$SSHPID" ]; then
+          INFO "Starting SSH Tunnel"
+          if ssh -o ConnectTimeout=10 -o ExitOnForwardFailure=yes -fN -i $SSHKEY $SSHREMOTEUSER@$SSHHOST -R $SSHREMOTEPORT:*:$SSHLOCALPORT  > /dev/null 2>&1; then
+            INFO "SSH tunnel established"
+          else
+            ERROR "SSH tunnel failed"
+          fi
         else
-          ERROR "SSH tunnel failed"
+          DEBUG "Reverse tunnel is up"
         fi
-      else
-        DEBUG "Reverse tunnel is up"
       fi
       ## PIA Port forward every hour
       DEBUG "Checking if we need to run port forward script"
@@ -328,14 +335,15 @@ while true; do
             iptables -A INPUT -i $VPNIF -j DROP
             OLDPORT=$PORT
             if [ -n $PBKEY ] ; then
+              VPNIP=$(su ubuntu -c "echo -e 'GET http://$EXTIPHOST/$EXTIPFILE HTTP/1.0\n\n' | nc -w 2 $EXTIPHOST 80 | tail -n 1")
               INFO "Sending PushBullet Notification"
-              curl -o /dev/null -s -u $PBKEY: https://api.pushbullet.com/v2/pushes -d type=note --data-urlencode "title=rPi Forward" --data-urlencode "body=Port $PORT Forwarded to 80"
+              curl -o /dev/null -s -u $PBKEY: https://api.pushbullet.com/v2/pushes -d type=note --data-urlencode "title=rPi Forward" --data-urlencode "body=http://$VPNIP:$PORT Forwarded to 80"
             fi
           else
             INFO "Port is same as old"
           fi
         else
-          INFO "Port($PORT) not valid"
+          INFO "Port forward enable failed"
         fi
       fi
       # DUCKDNS Update
