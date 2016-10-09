@@ -314,7 +314,6 @@ while true; do
       ## PIA Port forward every hour
       DEBUG "Checking if we need to run port forward script"
       if [ "$PORTFOR" != $(date +%H) ] ; then
-        INFO "$VPNPASS $VPNIF"
         PORT=$(su $TORRENTUSER -c "$SELFDIR/portforward/port_forward.sh -f $VPNPASS -i $VPNIF -s")
         if [[ $PORT =~ ^-?[0-9]+$ ]] ; then
           PORTFOR=$(date +%H)
@@ -330,7 +329,7 @@ while true; do
             OLDPORT=$PORT
             if [ -n $PBKEY ] ; then
               INFO "Sending PushBullet Notification"
-              curl -u $PBKEY: -X POST https://api.pushbullet.com/v2/pushes --header 'Content-Type: application/json' --data-binary '{"type": "note", "title": "Port Forwarding", "body": "Port is $PORT"}'> /dev/null
+              curl -o /dev/null -s -u $PBKEY: https://api.pushbullet.com/v2/pushes -d type=note --data-urlencode "title=rPi Forward" --data-urlencode "body=Port $PORT Forwarded to 80"
             fi
           else
             INFO "Port is same as old"
