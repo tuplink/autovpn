@@ -37,7 +37,7 @@ TORRENTPORT="57225"				#rTorrent port
 ENABLEDHT="1"					#torrent DHT 1 yes 2 no
 SCREENNAME="torrent"            		#Screen session name for rtorrent to run in
 MOUNTCHECK="/media/torrent"     		#Storage Device
-#REVERSE TUNNEL ACCESS 
+#REVERSE TUNNEL ACCESS
 SSHKEY=""					#tunnle key
 SSHHOST=""					#tunnle host
 SSHREMOTEUSER=""				#tunnle user
@@ -53,6 +53,7 @@ WIFISSID="xfinitywifi"				#SSID to connect to
 #DYNAMIC DNS (DUCKDNS)
 DUCKKEY=""					#DUCKDNS Key
 DUCKDOMAIN=""					#DUCKDNS DOMAIN (bob.duckdns.org)
+#Messaging
 PBKEY=""                                        #Pushbullet key
 
 #/Settings
@@ -61,30 +62,67 @@ if [[ -r extra.sh ]] ; then
 fi
 #/Settings
 
+#/MODULES
+for f in $SELFDIR/modules/*.sh; do
+  source $f
+done
+#/MODULES
+
 #START OF SCRIPT
+RUNOPTS=$@
+#GET SCRIPT OPTIONS
+while [ "`echo $1 | cut -c1`" = "-" ]; do
+  case "$1" in
+    "--quiet"|"-q"           ) QUIET=1;shift 1;;
+    "--force"|"-f"           ) FORCE=1;shift 1;;
+    "--enable"               ) if [ -a "$SELFDIR/modules/$2.shx" ] ; then
+                                  echo "Enabling $2"
+                                  mv $SELFDIR/modules/$2.shx $SELFDIR/modules/$2.sh
+                                  $SELFDIR/modules/$2.sh help
+                                  exit 1
+                               elif [ -a "$SELFDIR/modules/$2.sh" ] ; then
+                                 echo "Module already enabled"
+                                 exit 0
+                               else
+                                 echo "$2 not avaliable"
+                                 exit
+                               fi;;
+    "--disable"              ) if [ -a "$SELFDIR/modules/$2.sh" ] ; then
+                                 echo "Disabling $2"
+                                 mv $SELFDIR/modules/$2.sh $SELFDIR/modules/$2.shx
+                                 exit 1
+                               elif [ -a "$SELFDIR/modules/$2.shx" ] ; then
+                                 echo "Module already disabled"
+                                 exit 0
+                               else
+                                 echo "$2 not avaliable"
+                                 exit 0
+                               fi;;
+    "--list"                ) echo "Enabled"
+                              for f in $SELFDIR/modules/*.*.sh; do
+                                echo "  "$(basename "${f%.*}")
+                              done
+                              echo "Available"
+                              for f in $SELFDIR/modules/*.*.shx; do
+                                echo "  "$(basename "${f%.*}")
+                              done
+                              exit 1;;
+    *                       ) echo "ERROR: Invalid option: \""$1"\""; exit 1;;
+  esac
+done
 
 
 ##CHECK IF USER IS ROOT
 if [[ $EUID -ne 0 ]];then
   if [ -x "$(command -v sudo)" ];then
     echo "Switching to root"
-    sudo $SELF $@
+    sudo $SELF $RUNOPTS
     exit 1
   else
     echo "Please install sudo or run this script as root."
     exit 1
   fi
 fi
-
-#GET SCRIPT OPTIONS
-while [ "`echo $1 | cut -c1`" = "-" ]; do
-  case "$1" in
-    "--quiet"|"-q"           ) QUIET=1;shift 1;;
-    "--force"|"-f"           ) FORCE=1;shift 1;;
-    *                       ) echo "ERROR: Invalid option: \""$1"\""; exit 1;;
-  esac
-done
-
 
 
 HOSTNAME=$(hostname)
@@ -329,11 +367,7 @@ while true; do
             iptables -A INPUT -i tun0 -p tcp --dport 80 -m state --state NEW,ESTABLISHED -j ACCEPT
             iptables -A INPUT -i $VPNIF -j DROP
             OLDPORT=$PORT
-            if [ -n $PBKEY ] ; then
-              VPNIP=$(su ubuntu -c "echo -e 'GET http://$EXTIPHOST/$EXTIPFILE HTTP/1.0\n\n' | nc -w 2 $EXTIPHOST 80 | tail -n 1")
-              INFO "Sending PushBullet Notification"
-              curl -o /dev/null -s -u $PBKEY: https://api.pushbullet.com/v2/pushes -d type=note --data-urlencode "title=rPi Forward" --data-urlencode "body=http://$VPNIP:$PORT Forwarded to 80"
-            fi
+            send_msg "http://$VPNIP:$PORT Forwarded to 80"
           else
             INFO "Port is same as old"
           fi
