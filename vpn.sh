@@ -307,6 +307,8 @@ while true; do
     INFO "VPN is active"
     if su $TORRENTUSER -c 'echo -e "GET http://google.com HTTP/1.0\n\n" | nc -w 2 google.com 80 > /dev/null 2>&1' ; then
       DEBUG "VPN has internet"
+      #Check Messages
+      reply_msg
       DEBUG "Check ad lists"
       if [ "$ADS" != $(date +%j) ] ; then
         ADS=$(date +%j)
@@ -370,6 +372,7 @@ while true; do
     DEBUG "Testing for internet connection"
     if echo -e "GET http://google.com HTTP/1.0\n\n" | nc -w 2 google.com 80 > /dev/null 2>&1 ; then
       DEBUG "Internet is good"
+      send_msg "Internet is Connected but no VPN"
       ## START OPENVPN
       VPNPID=$(pidof openvpn)
       if [ -n "$VPNPID" ]; then
@@ -458,7 +461,7 @@ while true; do
           AP=$(echo $CONNECT | grep -o -E '([[:xdigit:]]{1,2}:){5}[[:xdigit:]]{1,2}')
           INFO "Connected to ($AP) $WIFISSID"
           DEBUG "Starting dhclient"
-          dhclient $WIFIIF
+          dhclient $WIFIIF -nw
           SLEEP 5
           if [[ $(ifconfig $WIFIIF 2>/dev/null | awk '/inet addr/{print substr($2,6)}') =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$  ]] ; then
             INFO "IP Recived for $WIFIIF"

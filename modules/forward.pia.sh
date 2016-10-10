@@ -10,7 +10,7 @@ forward_pia(){
           INFO "Port Number changed"
           DEBUG "Adding new rule for inbound port"
           iptables -D INPUT -i $VPNIF -j DROP
-          iptables -t nat -D PREROUTING -i $VPNIF -p tcp --dport $OLDPORT -j REDIRECT --to-port 80
+          iptables -t nat -D PREROUTING -i $VPNIF -p tcp --dport $OLDPORT -j REDIRECT --to-port 80 > /dev/null
           iptables -t nat -A PREROUTING -i $VPNIF -p tcp --dport $PORT -j REDIRECT --to-port 80
           iptables -A INPUT -i tun0 -p tcp --dport 80 -m state --state NEW,ESTABLISHED -j ACCEPT
           iptables -A INPUT -i $VPNIF -j DROP
