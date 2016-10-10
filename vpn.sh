@@ -278,7 +278,7 @@ while true; do
   ## Add OPTIONS ##
   read -sn1 -t1 c
   case $c in
-    1) SYSTEM "Restarted VPN script"; $SELF -f;;
+    1) SYSTEM "Restarted VPN script"; $SELF -f $RUNOPTS;;
     2) SYSTEM "Restarted OpenVPN"; killall openvpn;;
     3) SYSTEM "Restarted SSH tunnel"; killall ssh;;
     4) SYSTEM "Restarted rTorrent"; killall screen;;
@@ -336,53 +336,10 @@ while true; do
           fi
         fi
       fi
-      ##  SSH TUNNEL ##
-      if [ -n $SSHKEY ] ; then
-        DEBUG "Checking status of Reverse Tunnel"
-        SSHPID=$(pgrep -f 'ssh -o ConnectTimeout=10')
-        if [ -z "$SSHPID" ]; then
-          INFO "Starting SSH Tunnel"
-          if ssh -o ConnectTimeout=10 -o ExitOnForwardFailure=yes -fN -i $SSHKEY $SSHREMOTEUSER@$SSHHOST -R $SSHREMOTEPORT:*:$SSHLOCALPORT  > /dev/null 2>&1; then
-            INFO "SSH tunnel established"
-          else
-            ERROR "SSH tunnel failed"
-          fi
-        else
-          DEBUG "Reverse tunnel is up"
-        fi
-      fi
-      ## PIA Port forward every hour
-      DEBUG "Checking if we need to run port forward script"
-      if [ "$PORTFOR" != $(date +%H) ] ; then
-        PORT=$($SELFDIR/portforward/port_forward.sh -f $VPNPASS -i $VPNIF -s)
-        if [[ $PORT =~ ^-?[0-9]+$ ]] ; then
-          PORTFOR=$(date +%H)
-          DEBUG "Inbound port is $PORT"
-          if [ "$PORT" != "$OLDPORT" ] || [ -z $OLDPORT ] ; then
-            INFO "Port Number changed"
-            DEBUG "Adding new rule for inbound port"
-            iptables -D INPUT -i $VPNIF -j DROP
-            iptables -t nat -D PREROUTING -i $VPNIF -p tcp --dport $OLDPORT -j REDIRECT --to-port 80
-            iptables -t nat -A PREROUTING -i $VPNIF -p tcp --dport $PORT -j REDIRECT --to-port 80
-            iptables -A INPUT -i tun0 -p tcp --dport 80 -m state --state NEW,ESTABLISHED -j ACCEPT
-            iptables -A INPUT -i $VPNIF -j DROP
-            OLDPORT=$PORT
-            send_msg "http://$VPNIP:$PORT Forwarded to 80"
-          else
-            INFO "Port is same as old"
-          fi
-        else
-          INFO "Port forward enable failed"
-        fi
-      fi
-      # DUCKDNS Update
-      if [ -n $DUCKKEY ] ;then
-        if [ "$DYNDNS" != "$(date +%H)" ] ; then
-          INFO "Updating Dynamic DNS"
-          DYNDNS=$(date +%H)
-          DNS=$(su ubuntu -c "echo -e 'GET http://www.duckdns.org/update?domains=$DUCKDOMAIN&token=$DUCKKEY&ip= HTTP/1.0\n\n' | nc -w 2 www.duckdns.org 80")
-        fi
-      fi
+      # DYNAMIC DNS
+      dynamic_dns
+      ## Port Forwarding ##
+      forward
       #ASYNC Routing enable
       if [ -z $ASYNC ] ; then
         ASYNC=1
