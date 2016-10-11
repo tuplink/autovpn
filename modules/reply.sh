@@ -6,12 +6,12 @@ reply_msg(){
   else
     echo "No way to send message $@"
   fi
-  shopt -s nocasematch
+  REPLY=${REPLY,,}
   if [ -n "$REPLY" ] ; then
     INFO "Recived message $REPLY"
-    if [ "$REPLY" == "Status" ] ; then
+    if [ "$REPLY" == "status" ] ; then
       send_msg "INSERT STATUS HERE"
-    elif [[ "$REPLY" == "Restart"* ]] ; then
+    elif [[ "$REPLY" == "restart"* ]] ; then
       if [[ "$REPLY" == *"openvpn" ]] ; then
         send_msg "Restarting OpenVPN"
         killall openvpn
@@ -21,15 +21,19 @@ reply_msg(){
       elif [[ "$REPLY" == *"ssh" ]] ; then
         send_msg "Restarting SSH Tunnel"
         killall ssh
-      elif [["$REPLY" == *"script"]] ; then
-        killall vpn.sh
+      elif [[ "$REPLY" == *"script" ]] ; then
+        systemctl restart autovpn.service
+      else
+        send_msg "Unknown Command $REPLY"
       fi
-    elif [ "$REPLY" == "Help" ] ; then
-      send_msg "Known Commands: Help, Status, Restart, Restart openvpn, Restart rtorrent, Restart ssh, Restart script"
+    elif [ "$REPLY" == "reboot" ] ; then
+      send_msg "Rebooting system now"
+      reboot
+    elif [ "$REPLY" == "help" ] ; then
+      send_msg "Known Commands: Help, Status, Reboot, Restart OpenVPN, Restart rTorrent, Restart SSH, Restart script"
     else
-      send_msg "Unknown Command $REPLY"
+      send_msg "Unknown command $REPLY. See HELP for more info"
     fi
-    shopt -u nocasematch
   fi
 }
 
