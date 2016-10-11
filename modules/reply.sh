@@ -10,7 +10,7 @@ reply_msg(){
   if [ -n "$REPLY" ] ; then
     INFO "Recived message $REPLY"
     if [ "$REPLY" == "status" ] ; then
-      send_msg "INSERT STATUS HERE"
+      status_msg
     elif [[ "$REPLY" == "restart"* ]] ; then
       if [[ "$REPLY" == *"openvpn" ]] ; then
         send_msg "Restarting OpenVPN"
@@ -30,9 +30,9 @@ reply_msg(){
       send_msg "Rebooting system now"
       reboot
     elif [ "$REPLY" == "help" ] ; then
-      send_msg "Known Commands: Help, Status, Reboot, Restart OpenVPN, Restart rTorrent, Restart SSH, Restart script"
+      send_msg "Known Commands: \n Help \n Status \n Reboot \n Restart OpenVPN \n Restart rTorrent \n Restart SSH \n Restart script"
     else
-      send_msg "Unknown command $REPLY. See HELP for more info"
+      send_msg "Unknown command $REPLY. Send HELP for more info"
     fi
   fi
 }

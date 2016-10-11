@@ -315,6 +315,7 @@ while true; do
       forward
       # PROGRAM MONITORING
       monitor
+      status
       SLEEP 15
     else
       INFO "VPN has no internet"
@@ -328,7 +329,7 @@ while true; do
     DEBUG "Testing for internet connection"
     if echo -e "GET http://google.com HTTP/1.0\n\n" | nc -w 2 google.com 80 > /dev/null 2>&1 ; then
       DEBUG "Internet is good"
-      send_msg "Internet is Connected Starting VPN"
+#      send_msg "Internet is Connected Starting VPN"
       ## START OPENVPN
       VPNPID=$(pidof openvpn)
       if [ -n "$VPNPID" ]; then

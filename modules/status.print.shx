@@ -1,0 +1,12 @@
+#!/bin/bash
+status_print(){
+  for key in "${!MONITOR[@]}" ; do
+    local string=$(status_lookup "$key")
+    echo "Status of $key is $string"
+  done
+}
+if [ "$1" == "help" ] ; then
+  echo "No aditinale config required"
+  echo "it is recomended to run with -q"
+fi
+
