@@ -1,6 +1,6 @@
 forward_pia(){
   DEBUG "Checking if we need to run port forward script"
-  if [ -n $VPNIF ] ; then
+  if [ -n $VPNIF ] && [ -n $VPNPASS ] ; then
     if [ "$PORTFOR" != $(date +%H) ] ; then
       PORT=$($SELFDIR/portforward/port_forward.sh -f $VPNPASS -i $VPNIF -s)
       if [[ $PORT =~ ^-?[0-9]+$ ]] ; then
@@ -10,9 +10,9 @@ forward_pia(){
           INFO "Port Number changed"
           DEBUG "Adding new rule for inbound port"
           iptables -D INPUT -i $VPNIF -j DROP
-          iptables -t nat -D PREROUTING -i $VPNIF -p tcp --dport $OLDPORT -j REDIRECT --to-port 80 > /dev/null
+          iptables -t nat -D PREROUTING -i $VPNIF -p tcp --dport $OLDPORT -j REDIRECT --to-port 80
           iptables -t nat -A PREROUTING -i $VPNIF -p tcp --dport $PORT -j REDIRECT --to-port 80
-          iptables -A INPUT -i tun0 -p tcp --dport 80 -m state --state NEW,ESTABLISHED -j ACCEPT
+          iptables -A INPUT -i $VPNIF -p tcp --dport 80 -m state --state NEW,ESTABLISHED -j ACCEPT
           iptables -A INPUT -i $VPNIF -j DROP
           OLDPORT=$PORT
           send_msg "http://$PUBLICIP:$PORT Forwarded to 80"
@@ -24,11 +24,12 @@ forward_pia(){
       fi
     fi
   else
-    INFO "VPNIF not set"
+    INFO "VPNIF and/or VPNPASS not set"
   fi
 }
 if [ "$1" == "help" ] ; then
   echo "Must set VPNIF= in Config"
+  echo "Must set VPNPASS= in Config"
 fi
 
 

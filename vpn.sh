@@ -23,7 +23,7 @@ DISPLAYSHOW="14"                                #Log entrys to show
 LOGLEVEL="2"                                    #1 ERROR 2 INFO 3 DEBUG
 SCRIPT_LOG=/dev/null                            #path to log to
 #VPN
-VPNIF="tun0"
+VPNIF="tun0"                                    #VPN IF
 VPNCF="$SELFDIR/openvpn/PIA/CA Montreal.ovpn"	#VPN config File
 VPNROUTE="$SELFDIR/openvpn/vpn-route"		#VPN route script
 VPNPASS="$SELFDIR/openvpn/user.txt"		#VPN Password
@@ -305,16 +305,41 @@ while true; do
   DEBUG "Checking VPN status"
   if [ -f /sys/class/net/$VPNIF/operstate ]; then
     INFO "VPN is active"
-    if su $TORRENTUSER -c 'echo -e "GET http://google.com HTTP/1.0\n\n" | nc -w 2 google.com 80 > /dev/null 2>&1' ; then
+    if su $TORRENTUSER -c 'echo -e "GET http://google.com HTTP/1.0\n\n" | nc -w 5 google.com 80 > /dev/null 2>&1' ; then
       DEBUG "VPN has internet"
       #Check Messages
       reply_msg
-      DEBUG "Check ad lists"
-      if [ "$ADS" != $(date +%j) ] ; then
-        ADS=$(date +%j)
-        INFO "Building AD Blocks"
-        /bin/bash $ADSCRIPT > /dev/null 2>&1 &
+      # DYNAMIC DNS
+      dynamic_dns
+      ## Port Forwarding ##
+      forward
+      # PROGRAM MONITORING
+      monitor
+      SLEEP 15
+    else
+      INFO "VPN has no internet"
+      ERROR "KILLING OpenVPN"
+      killall openvpn
+      SLEEP 1
+    fi
+  else
+    INFO "VPN not up"
+    ## Test Internet Connection
+    DEBUG "Testing for internet connection"
+    if echo -e "GET http://google.com HTTP/1.0\n\n" | nc -w 2 google.com 80 > /dev/null 2>&1 ; then
+      DEBUG "Internet is good"
+      send_msg "Internet is Connected Starting VPN"
+      ## START OPENVPN
+      VPNPID=$(pidof openvpn)
+      if [ -n "$VPNPID" ]; then
+        ERROR "VPN running but no interface yet"
+        INFO "Killing OpenVPN process ($VPNPID)"
+        kill -9 $VPNPID
       fi
+      INFO "Starting VPN"
+      openvpn --daemon --config "$VPNCF" --writepid "$SELFDIR/openvpn.pid" --auth-user-pass "$VPNPASS" --route-nopull --route-up "$VPNROUTE" --script-security 2
+      #WAIT FOR CONNECTION
+      SLEEP 15
       VPNIP=$(ifconfig $VPNIF 2>/dev/null | awk '/inet addr/{print substr($2,6)}')
       if [[ -z "$VPNIP" ]]; then
         ERROR "Cannot find IP for $VPNIF."
@@ -337,104 +362,63 @@ while true; do
            INFO "$HOSTFILE up to date"
           fi
         fi
-      fi
-      # DYNAMIC DNS
-      dynamic_dns
-      ## Port Forwarding ##
-      forward
-      #ASYNC Routing enable
-      if [ -z $ASYNC ] ; then
-        ASYNC=1
-        INFO "Keeping inbound traffic on interface"
-        ip rule add from $VPNIP/32 table ubuntu priority 100
-      fi
-      ##  RTORRENT CHECK ##
-      DEBUG "Check if rtrrent is up"
-      TESTSCREEN=$(su $TORRENTUSER -c 'screen -ls | egrep "[0-9]+.$SCREENNAME"')
-      if [[ -n "$TESTSCREEN" ]]; then
-        INFO "rTorrent is running."
-      else
-        INFO "Starting rTorrent"
-        stty stop undef 2>/dev/null
-        stty start undef 2>/dev/null
-        su $TORRENTUSER -c "screen -A -dmS $SCREENNAME /usr/local/bin/rtorrent"
-      fi
-      SLEEP 15
-    else
-      INFO "VPN has no internet"
-      ERROR "KILLING OpenVPN"
-      killall openvpn
-      SLEEP 1
-    fi
-  else
-    INFO "VPN not up"
-    ## Test Internet Connection
-    DEBUG "Testing for internet connection"
-    if echo -e "GET http://google.com HTTP/1.0\n\n" | nc -w 2 google.com 80 > /dev/null 2>&1 ; then
-      DEBUG "Internet is good"
-      send_msg "Internet is Connected but no VPN"
-      ## START OPENVPN
-      VPNPID=$(pidof openvpn)
-      if [ -n "$VPNPID" ]; then
-        ERROR "VPN running but no interface yet"
-        INFO "Killing OpenVPN process ($VPNPID)"
-        kill -9 $VPNPID
-      fi
-      INFO "Starting VPN"
-#     openvpn --config "$VPNCF"
-      openvpn --daemon --config "$VPNCF" --writepid "$SELFDIR/openvpn.pid" --auth-user-pass "$VPNPASS" --route-nopull --route-up "$VPNROUTE" --script-security 2
-      #WAIT FOR CONNECTION
-      SLEEP 15
-      if [ "$FWSET" != "1" ] ; then
-        ## IPTABLE CONFIG ##
-        DEBUG "Enabeling IP Forwardig"
-        echo 1 > /proc/sys/net/ipv4/ip_forward
-        INFO "Adding IPTABLE RULES"
-        iptables -F -t nat
-        iptables -F -t mangle
-        iptables -F -t filter
-        ## User packets marked for VPN
-        INFO "Marking packets from $TORRENTUSER"
-        iptables -t mangle -A OUTPUT -m owner --gid-owner $TORRENTUSER -j MARK --set-mark 1
-        iptables -t mangle -A OUTPUT -m owner --gid-owner $TORRENTUSER -j CONNMARK --save-mark
-        ## ADD ROUTER STUFF
-        if [ $APTOVPN -eq 1 ] ; then
-          INFO "Sendind $APIF traffic over VPN"
-          iptables -t mangle -A PREROUTING -i $APIF -j MARK --set-mark 1
-          iptables -t mangle -A PREROUTING -i $APIF -j CONNMARK --save-mark
-          iptables -A INPUT -i $APIF -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
-          iptables -t nat -A POSTROUTING -o $VPNIF -j MASQUERADE
-          iptables -A FORWARD -i $APIF -o $VPNIF -m state --state RELATED,ESTABLISHED -j ACCEPT
-          iptables -A FORWARD -i $VPNIF -o $APIF -j ACCEPT
-        else
-          INFO "Sendind $APIF traffic over LAN"
-          iptables -t nat -A POSTROUTING -o $LANIF -j MASQUERADE
-          iptables -A FORWARD -i $APIF -o $LANIF -m state --state RELATED,ESTABLISHED -j ACCEPT
-          iptables -A FORWARD -i $LANIF -o $APIF -j ACCEPT
-        fi
-        # allow responses
-        iptables -A INPUT -i $VPNIF -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
-        # allow incoming $TORRENTPORT
-        iptables -A INPUT -i $VPNIF -p tcp --dport $TORRENTPORT -j ACCEPT
-        iptables -A INPUT -i $VPNIF -p udp --dport $TORRENTPORT -j ACCEPT
-        # allow incoming DHT
-        if [[ "$ENABLEDHT" = "1" ]]; then
-          INFO "Enabling DHT firewall rule"
-          iptables -A INPUT -i $VPNIF -p udp --dport 6881 -j ACCEPT
-          iptables -t raw -I PREROUTING -i $VPNIF -p udp --dport 6881 -j NOTRACK
-          iptables -t raw -I OUTPUT -o $VPNIF -p udp --sport 6881 -j NOTRACK
-        fi
-        ## block everything else incoming on $VPNIF
-        iptables -A INPUT -i $VPNIF -j DROP
-        ## ALLOW ALL $LANIF
-        iptables -A INPUT -i $LANIF -j ACCEPT
-        iptables -A OUTPUT -o $LANIF -j ACCEPT
-        ## ALLOW ALL $APIF
-        iptables -A INPUT -i $APIF -j ACCEPT
-        iptables -A OUTPUT -o $APIF -j ACCEPT
-        # Allow $LANIF Internal DNS
-        iptables -t nat -A PREROUTING -p udp --dport 53 -i $LANIF -j DNAT --to 172.24.1.1:53
-        FWSET=1
+        if [ "$FWSET" != "1" ] ; then
+          ## IPTABLE CONFIG ##
+          DEBUG "Enabeling IP Forwardig"
+          echo 1 > /proc/sys/net/ipv4/ip_forward
+          #ASYNC Routing enable
+          if [ -z $ASYNC ] ; then
+            ASYNC=1
+            INFO "Keeping inbound traffic on interface"
+            ip rule add from $VPNIP/32 table ubuntu priority 100
+          fi
+          INFO "Adding IPTABLE RULES"
+          iptables -F -t nat
+          iptables -F -t mangle
+          iptables -F -t filter
+          ## User packets marked for VPN
+          INFO "Marking packets from $TORRENTUSER"
+          iptables -t mangle -A OUTPUT -m owner --gid-owner $TORRENTUSER -j MARK --set-mark 1
+          iptables -t mangle -A OUTPUT -m owner --gid-owner $TORRENTUSER -j CONNMARK --save-mark
+          ## ADD ROUTER STUFF
+          if [ $APTOVPN -eq 1 ] ; then
+            INFO "Sendind $APIF traffic over VPN"
+            iptables -t mangle -A PREROUTING -i $APIF -j MARK --set-mark 1
+            iptables -t mangle -A PREROUTING -i $APIF -j CONNMARK --save-mark
+            iptables -A INPUT -i $APIF -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+            iptables -t nat -A POSTROUTING -o $VPNIF -j MASQUERADE
+            iptables -A FORWARD -i $APIF -o $VPNIF -m state --state RELATED,ESTABLISHED -j ACCEPT
+            iptables -A FORWARD -i $VPNIF -o $APIF -j ACCEPT
+          else
+            INFO "Sendind $APIF traffic over LAN"
+            iptables -t nat -A POSTROUTING -o $LANIF -j MASQUERADE
+            iptables -A FORWARD -i $APIF -o $LANIF -m state --state RELATED,ESTABLISHED -j ACCEPT
+            iptables -A FORWARD -i $LANIF -o $APIF -j ACCEPT
+          fi
+          # allow responses
+          iptables -A INPUT -i $VPNIF -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+          # allow incoming $TORRENTPORT
+          iptables -A INPUT -i $VPNIF -p tcp --dport $TORRENTPORT -j ACCEPT
+          iptables -A INPUT -i $VPNIF -p udp --dport $TORRENTPORT -j ACCEPT
+          # allow incoming DHT
+          if [[ "$ENABLEDHT" = "1" ]]; then
+            INFO "Enabling DHT firewall rule"
+            iptables -A INPUT -i $VPNIF -p udp --dport 6881 -j ACCEPT
+            iptables -t raw -I PREROUTING -i $VPNIF -p udp --dport 6881 -j NOTRACK
+            iptables -t raw -I OUTPUT -o $VPNIF -p udp --sport 6881 -j NOTRACK
+          fi
+          ## block everything else incoming on $VPNIF
+          iptables -A INPUT -i $VPNIF -j DROP
+          ## ALLOW ALL $LANIF
+          iptables -A INPUT -i $LANIF -j ACCEPT
+          iptables -A OUTPUT -o $LANIF -j ACCEPT
+          ## ALLOW ALL $APIF
+          iptables -A INPUT -i $APIF -j ACCEPT
+          iptables -A OUTPUT -o $APIF -j ACCEPT
+          # Allow $LANIF Internal DNS
+          iptables -t nat -A PREROUTING -p udp --dport 53 -i $LANIF -j DNAT --to 172.24.1.1:53
+          FWSET=1
+       fi
       fi
     else
       #NO INTERNET
