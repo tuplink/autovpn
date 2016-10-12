@@ -1,3 +1,5 @@
+#!/bin/bash
+MONITOR[mount]=0
 monitor_mount(){
   if [[ ! -z "$MOUNTCHECK" ]]; then
     DEBUG "Checking if $MOUNTCHECK is mounted"

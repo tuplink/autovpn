@@ -1,5 +1,4 @@
 #!/bin/bash
-declare -A MONITOR
 monitor(){
   if [ -n "$(declare -f -F monitor_internet)" ] ; then
     monitor_internet
@@ -12,6 +11,16 @@ monitor(){
   fi
   if [ -n "$(declare -f -F monitor_ads)" ] ; then
     monitor_ads
+  fi
+  ## IF ALL Monitors are good then sleep for 15
+  for key in "${!MONITOR[@]}" ; do
+    if [ "${MONITOR[$key]}" -ne 3 ] ; then
+      local longsleep=no
+    fi
+  done
+  if [ "$longsleep" != "no" ] ; then
+    INFO "All services up taking a nap"
+    SLEEP 15
   fi
 }
 

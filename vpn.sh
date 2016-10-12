@@ -58,6 +58,7 @@ PBKEY=""                                        #Pushbullet key
 
 ##########DO NOT EDIT BELOW THIS LINE##################
 declare -A GPIOPINOUT
+declare -A MONITOR
 RUNOPTS=$@
 #/Settings
 if [[ -r extra.sh ]] ; then
@@ -185,16 +186,15 @@ while true; do
     if su $TORRENTUSER -c 'echo -e "GET http://google.com HTTP/1.0\n\n" | nc -w 5 google.com 80 > /dev/null 2>&1' ; then
       MONITOR[vpn]=3
       DEBUG "VPN has internet"
+      # PROGRAM MONITORING
+      monitor
       #Check Messages
       reply_msg
       # DYNAMIC DNS
       dynamic_dns
       ## Port Forwarding ##
       forward
-      # PROGRAM MONITORING
-      monitor
       status
-      SLEEP 15
     else
       INFO "VPN has no internet"
       ERROR "KILLING OpenVPN"

@@ -1,4 +1,6 @@
 #!/bin/bash
+MONITOR[VPN Internet]=0
+MONITOR[Public Internet]=0
 monitor_internet(){
   if [ -n $TORRENTUSER ] ; then
     if echo -e "GET http://google.com HTTP/1.0\n\n" | nc -w 2 google.com 80 > /dev/null 2>&1 ; then

@@ -6,7 +6,7 @@ status_print(){
   done
 }
 if [ "$1" == "help" ] ; then
-  echo "No aditinale config required"
+  echo "No aditinal config required"
   echo "it is recomended to run with -q"
 fi
 
