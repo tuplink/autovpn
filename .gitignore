@@ -2,3 +2,4 @@ openvpn.pid
 vpn.pid
 extras.sh
 LASTUPDATEID.telagraph
+*.save*
