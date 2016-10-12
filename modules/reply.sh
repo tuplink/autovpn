@@ -26,14 +26,20 @@ reply_msg(){
       else
         send_msg "Unknown Command $REPLY"
       fi
+    elif [[ "$REPLY" == *"setvar"* ]] ; then
+      local txt=${REPLY#* }
+      local val=${txt#*=}
+      local var=${txt%=*}
+      local var=${var^^}
+      export $var=$val
+      send_msg "$var set to $BOB"
     elif [ "$REPLY" == "reboot" ] ; then
       send_msg "Rebooting system now"
       reboot
     elif [ "$REPLY" == "help" ] ; then
-      send_msg "Known Commands: \n Help \n Status \n Reboot \n Restart OpenVPN \n Restart rTorrent \n Restart SSH \n Restart script"
+      send_msg "Known Commands: \n Help \n Status \n Reboot \n Restart OpenVPN \n Restart rTorrent \n Restart SSH \n Restart script \n setvar <name>=<val>"
     else
       send_msg "Unknown command $REPLY. Send HELP for more info"
     fi
   fi
 }
-

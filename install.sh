@@ -36,20 +36,22 @@ setup_initd(){
 }
 setup_systemd(){
   echo "[Unit]
-    Description=AutoVPN daemon
-    After=network.target
 
-    [Service]
-    Type=simple
-    KillMode=none
-    WorkingDirectory=$SELFDIR/
-    ExecStart=$SELFDIR/vpn.sh -q -f
-    ExecReload=$SELFDIR/vpn.sh -q -f
-    KillMode=process
-    Restart=on-failure
+[Unit]
+Description=AutoVPN daemon
+After=network.target
 
-    [Install]
-    WantedBy=default.target" > /etc/systemd/system/autovpn.service
+[Service]
+Type=simple
+KillMode=none
+WorkingDirectory=$SELFDIR/
+ExecStart=$SELFDIR/vpn.sh -q -f
+ExecReload=$SELFDIR/vpn.sh -q -f
+KillMode=process
+Restart=on-failure
+
+[Install]
+WantedBy=default.target" > /etc/systemd/system/autovpn.service
     chmod 664 /etc/systemd/system/autovpn.service
     systemctl daemon-reload
     systemctl start autovpn.service
