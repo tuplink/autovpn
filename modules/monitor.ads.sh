@@ -5,14 +5,14 @@ monitor_ads(){
       ADS=$(date +%j)
       INFO "Building AD Blocks"
       /bin/bash $ADSCRIPT > /dev/null 2>&1 &
-      MONITOR[ad]=2
+      MONITOR[ads]=2
     else
       #No need to run
-      MONITOR[ad]=3
+      MONITOR[ads]=3
     fi
   else
     INFO "ADSCRIPT not set"
-    MONITOR[ad]=1
+    MONITOR[ads]=1
   fi
 }
 

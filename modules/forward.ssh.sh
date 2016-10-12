@@ -6,6 +6,7 @@ forward_ssh(){
       INFO "Starting SSH Tunnel"
       if ssh -o ConnectTimeout=10 -o ExitOnForwardFailure=yes -fN -i $SSHKEY $SSHREMOTEUSER@$SSHHOST -R $SSHREMOTEPORT:*:$SSHLOCALPORT  > /dev/null 2>&1; then
         INFO "SSH tunnel established"
+        send_msg "http://$SSHHOST:$SSHREMOTEPORT Forwarded to $SSHLOCALPORT"
       else
         ERROR "SSH tunnel failed"
       fi

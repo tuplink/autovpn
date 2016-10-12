@@ -17,16 +17,16 @@
 SELF=${BASH_SOURCE[0]}
 SELFDIR="$( cd "$( dirname "$SELF" )" && pwd )"
 ##
-#Settings
+#####SET DEFAULTS####
 LOCKFILE="$SELFDIR/vpn.pid"			#Script lock
 DISPLAYSHOW="14"                                #Log entrys to show
 LOGLEVEL="2"                                    #1 ERROR 2 INFO 3 DEBUG
 SCRIPT_LOG=/dev/null                            #path to log to
 #VPN
-VPNIF="tun0"                                    #VPN IF
-VPNCF="$SELFDIR/openvpn/PIA/CA Montreal.ovpn"	#VPN config File
-VPNROUTE="$SELFDIR/openvpn/vpn-route"		#VPN route script
-VPNPASS="$SELFDIR/openvpn/user.txt"		#VPN Password
+VPNIF=""	                                #VPN IF
+VPNCF=""					#VPN config File
+VPNROUTE=""					#VPN route script
+VPNPASS=""					#VPN Password
 HOSTFILE="/etc/hosts"				#hostname file
 HOST="vpniphost"				#hostname for local lookups
 #AD BLOCKING
@@ -41,8 +41,8 @@ MOUNTCHECK="/media/torrent"     		#Storage Device
 SSHKEY=""					#tunnle key
 SSHHOST=""					#tunnle host
 SSHREMOTEUSER=""				#tunnle user
-SSHLOCALPORT="22"				#internal port for tunnle
-SSHREMOTEPORT="23456"				#external port for tunnle
+SSHLOCALPORT=""					#internal port for tunnle
+SSHREMOTEPORT=""				#external port for tunnle
 #ROUTING STUFF
 APIF="wlan9"					#Hotspot Interface
 LANIF="eth0"					#LAN Interface
@@ -56,6 +56,9 @@ DUCKDOMAIN=""					#DUCKDNS DOMAIN (bob.duckdns.org)
 #Messaging
 PBKEY=""                                        #Pushbullet key
 
+##########DO NOT EDIT BELOW THIS LINE##################
+declare -A GPIOPINOUT
+RUNOPTS=$@
 #/Settings
 if [[ -r extra.sh ]] ; then
   source extra.sh
@@ -68,8 +71,7 @@ for f in $SELFDIR/modules/*.sh; do
 done
 #/MODULES
 
-#START OF SCRIPT
-RUNOPTS=$@
+######################START OF SCRIPT#########################
 #GET SCRIPT OPTIONS
 while [ "`echo $1 | cut -c1`" = "-" ]; do
   case "$1" in
