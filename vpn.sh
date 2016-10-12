@@ -32,11 +32,11 @@ HOST="vpniphost"				#hostname for local lookups
 #AD BLOCKING
 ADSCRIPT="$SELFDIR/pihole/gravity.sh"		#PiHole Script
 #RTORRENT
-TORRENTUSER="ubuntu"				#rTorrent User
-TORRENTPORT="57225"				#rTorrent port
-ENABLEDHT="1"					#torrent DHT 1 yes 2 no
-SCREENNAME="torrent"            		#Screen session name for rtorrent to run in
-MOUNTCHECK="/media/torrent"     		#Storage Device
+TORRENTUSER=""					#rTorrent User
+TORRENTPORT=""					#rTorrent port
+ENABLEDHT=""					#torrent DHT 1 yes 2 no
+SCREENNAME=""            			#Screen session name for rtorrent to run in
+MOUNTCHECK=""			     		#Storage Device
 #REVERSE TUNNEL ACCESS
 SSHKEY=""					#tunnle key
 SSHHOST=""					#tunnle host
