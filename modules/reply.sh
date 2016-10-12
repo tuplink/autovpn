@@ -22,6 +22,7 @@ reply_msg(){
         send_msg "Restarting SSH Tunnel"
         killall ssh
       elif [[ "$REPLY" == *"script" ]] ; then
+        send_msg "Restarting AutoVPN Script"
         systemctl restart autovpn.service
       else
         send_msg "Unknown Command $REPLY"
@@ -31,8 +32,8 @@ reply_msg(){
       local val=${txt#*=}
       local var=${txt%=*}
       local var=${var^^}
-      export $var=$val
-      send_msg "$var set to $BOB"
+      export "$var"="$val"
+      send_msg "$var set to $val"
     elif [ "$REPLY" == "reboot" ] ; then
       send_msg "Rebooting system now"
       reboot

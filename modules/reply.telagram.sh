@@ -2,9 +2,9 @@
 telegram_reply(){
   if [ -n "$TELKEY" ] && [ -n "$TELUSERID" ] ; then
     local LASTUPDATEID=$(cat LASTUPDATEID.telagraph)
-    local UPDATES=$(curl -s --max-time 3 -d "limit=5&offset=$LASTUPDATEID" "https://api.telegram.org/bot$TELKEY/getUpdates")
+    local UPDATES=$(curl -s --max-time 3 -d "limit=2&offset=$LASTUPDATEID" "https://api.telegram.org/bot$TELKEY/getUpdates")
     UPDATES=$(echo $UPDATES | tr ',' '\n' | tr '[' '{' | tr '{' '\n' | tr '}' '\n' | tr ']' '\n' | tr -d '"' | grep 'update_id\|id\|text\|ok')
-    oIFS="$IFS"
+    local oIFS="$IFS"
     IFS=$'\n'
     local i
     for i in $UPDATES ; do
@@ -19,12 +19,14 @@ telegram_reply(){
       fi
     done
     IFS="$oIFS"
-    if [ "$VALID" == "true" ] && [ "$ID" == "$TELUSERID" ] ; then
-      if [ "$LASTUPDATEID" != "$UPDATEID" ] ; then
-        echo $UPDATEID > LASTUPDATEID.telagraph
-        REPLY=$TEXT
-      else
-        REPLY=""
+    if [ "$VALID" == "true" ] ; then
+      echo $UPDATEID > LASTUPDATEID.telagraph
+      if [ "$ID" == "$TELUSERID" ] ; then
+        if [ "$LASTUPDATEID" != "$UPDATEID" ] ; then
+          REPLY=$TEXT
+        else
+          REPLY=""
+        fi
       fi
     fi
   else
