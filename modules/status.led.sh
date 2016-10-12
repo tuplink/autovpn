@@ -2,10 +2,16 @@
 
 #SETUP ALL REQUIRED PINS AS OUTPUTS
 if [ -e /sys/class/gpio/export ] ; then
-  for val in $GPIOPINOUT ; do
+  for val in ${GPIOPINOUT[@]} ; do
     if [ "$val" -gt 0 ] ; then
+      if [ -e "/sys/class/gpio/gpio$val/value" ] ; then
+        echo "$val" > /sys/class/gpio/unexport
+        DEBUG "GPIO: unexported $val"
+      fi
       echo "$val" > /sys/class/gpio/export
+      DEBUG "GPIO: exported $val"
       echo out > /sys/class/gpio/gpio$val/direction
+      echo 0 > /sys/class/gpio/gpio$val/value
     fi
   done
 fi
