@@ -12,13 +12,13 @@ status_lookup(){
   # 0 unknown
   # 1 stopped
   # 2 started
-  # 3 running
+  # 3 OK
   if [ "${MONITOR[$1]}" == "1" ] ; then
     echo "stopped"
   elif [ "${MONITOR[$1]}" == "2" ] ; then
     echo "started"
   elif [ "${MONITOR[$1]}" == "3" ] ; then
-    echo "running"
+    echo "OK"
   else
     echo "unknown"
   fi

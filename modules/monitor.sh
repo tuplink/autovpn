@@ -1,6 +1,9 @@
 #!/bin/bash
 declare -A MONITOR
 monitor(){
+  if [ -n "$(declare -f -F monitor_internet)" ] ; then
+    monitor_internet
+  fi
   if [ -n "$(declare -f -F monitor_mount)" ] ; then
     monitor_mount
   fi
