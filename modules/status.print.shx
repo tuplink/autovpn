@@ -1,8 +1,11 @@
 #!/bin/bash
 status_print(){
   for key in "${!MONITOR[@]}" ; do
-    local string=$(status_lookup "$key")
-    echo "Status of $key is $string"
+    if [ "${MONITOR[$key]}" != "${PRINTMONITOR[$key]}" ] ; then
+      local string=$(status_lookup "$key")
+      PRINTMONITOR["$key"]="${MONITOR[$key]}"
+      echo "Status of $key changed to $string"
+    fi
   done
 }
 if [ "$1" == "help" ] ; then

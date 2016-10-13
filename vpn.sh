@@ -59,6 +59,7 @@ PBKEY=""                                        #Pushbullet key
 ##########DO NOT EDIT BELOW THIS LINE##################
 declare -A GPIOPINOUT
 declare -A MONITOR
+declare -A PRINTMONITOR
 RUNOPTS=$@
 #/Settings
 if [[ -r extra.sh ]] ; then
