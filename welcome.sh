@@ -7,14 +7,21 @@
 #trap ''  SIGQUIT
 #trap '' SIGTSTP
 # display message and pause 
-
-EXTIPHOST=""
-EXTIPFILE=""
-
+DEBUG(){
+local b=1
+}
+status(){
+DEBUG
+}
+declare -A GPIOPINOUT
+declare -A MONITOR
 if [[ -r extra.sh ]] ; then
   source extra.sh
 fi
-
+source modules/monitor.internet.sh
+MONITOR[Public Internet]=3
+MONITOR[vpn]=3
+monitor_internet
 pause(){
 	local m="$@"
 	echo "$m"
@@ -29,8 +36,6 @@ do
         DOWN=$(numfmt --to=iec-i --suffix=b $DOWN)
         UP=$(xmlrpc http://127.0.0.1:80/RPC2/ throttle.global_up.rate | grep integer | cut -d ":" -f 2 | sed -e 's/^[[:space:]]*//')
         UP=$(numfmt --to=iec-i --suffix=b $UP)
-        PUBIP=$(sudo echo -e "GET http://$EXTIPHOST/$EXTIPFILE HTTP/1.0\n\n" | nc -w 2 $EXTIPHOST 80 | tail -n 1)
-        VPNIP=$(su ubuntu -c "echo -e 'GET http://$EXTIPHOST/$EXTIPFILE HTTP/1.0\n\n' | nc -w 2 $EXTIPHOST 80 | tail -n 1")
         # show menu
 	clear
         echo "---------------------------------------"
@@ -49,7 +54,7 @@ do
 	echo "8. Reboot"
 	echo "9. Exit"
 	echo "---------------------------------------"
-        echo "Public IP  $PUBIP"
+        echo "Public IP  $PUBLICIP"
         echo "OpenVPN IP $VPNIP"
         echo "rTorrent Speed Down: $DOWN  Up: $UP"
         echo "---------------------------------------"
