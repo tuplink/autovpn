@@ -33,6 +33,7 @@ monitor_wifi(){
         if [[ $(ifconfig $WIFIIF 2>/dev/null | awk '/inet addr/{print substr($2,6)}') =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$  ]] ; then
           MONITOR[wifi]=3
           INFO "IP Recived for $WIFIIF"
+          monitor_internet
         else
           MONITOR[wifi]=1
           INFO "No IP Recived for $WIFIIF"
@@ -41,7 +42,6 @@ monitor_wifi(){
     else
       MONITOR[wifi]=0
       ERROR "$WIFIIF not installed"
-      SLEEP 15
     fi
   else
     DEBUG "WIFIIF not set or internet is already up"

@@ -81,7 +81,7 @@ monitor_vpn_hostname(){
 monitor_vpn(){
   if [  ${MONITOR[Public Internet]} -ge 3  ] ; then
     if [ ${MONITOR[VPN Internet]} -le 2 ] ; then
-      VPNPID=$(pidof openvpn)
+      local VPNPID=$(cat $SELFDIR/openvpn.pid)
       if [ -n "$VPNPID" ]; then
         INFO "Killing OpenVPN process ($VPNPID)"
         kill -9 $VPNPID
