@@ -15,6 +15,7 @@ monitor_mount(){
   else
     MONITOR[ad]=1
   fi
+  status
 }
 if [ "$1" == "help" ] ; then
   echo "Must set MOUNTCHECK= in Config"

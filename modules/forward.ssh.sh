@@ -21,6 +21,7 @@ forward_ssh(){
   else
     INFO "SSHKEY, SSHLOCALPORT, SSHREMOTEPORT, SSHHOST and/or SSHREMOTEUSER not set"
   fi
+  status
 }
 if [ "$1" == "help" ] ; then
   echo "Must set SSHKEY= in Config"

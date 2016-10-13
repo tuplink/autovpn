@@ -9,6 +9,6 @@ status_msg(){
   send_msg "$msg"
 }
 if [ "$1" == "help" ] ; then
-  echo "No aditinale config required"
+  echo "No aditional config required"
 fi
 

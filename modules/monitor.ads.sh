@@ -18,9 +18,9 @@ monitor_ads(){
     INFO "ADSCRIPT not set"
     MONITOR[ads]=1
   fi
+  status
 }
 
 if [ "$1" == "help" ] ; then
   echo "Must set ADSCRIPT= in Config"
 fi
-

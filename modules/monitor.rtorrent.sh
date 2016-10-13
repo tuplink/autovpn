@@ -21,6 +21,7 @@ monitor_rtorrent(){
     INFO "TORRENTUSER and/or SCREENNAME not set"
 	MONITOR[rtorrent]=1
   fi
+  status
 }
 if [ "$1" == "help" ] ; then
   echo "Must set TORRENTUSER= in Config"

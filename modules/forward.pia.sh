@@ -1,3 +1,4 @@
+#!/bin/bash
 forward_pia(){
   DEBUG "Checking if we need to run port forward script"
   if [ -n $VPNIF ] && [ -n $VPNPASS ] ; then
@@ -30,6 +31,7 @@ forward_pia(){
   else
     INFO "VPNIF and/or VPNPASS not set"
   fi
+  status
 }
 if [ "$1" == "help" ] ; then
   echo "Must set VPNIF= in Config"
