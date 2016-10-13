@@ -3,8 +3,9 @@ status_print(){
   for key in "${!MONITOR[@]}" ; do
     if [ "${MONITOR[$key]}" != "${PRINTMONITOR[$key]}" ] ; then
       local string=$(status_lookup "$key")
+      local date=$(date +"%m/%d/%Y %H:%M")
       PRINTMONITOR["$key"]="${MONITOR[$key]}"
-      echo "Status of $key changed to $string"
+      echo "[$date] Status of $key changed to $string"
     fi
   done
 }
