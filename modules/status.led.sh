@@ -1,5 +1,7 @@
 #!/bin/bash
-
+# use pins physical pins
+# 4 17 27 22 29 31 33 35 37 40 20 16 12 16 18 22 32 26 28 40
+#
 #SETUP ALL REQUIRED PINS AS OUTPUTS
 if [ -e /sys/class/gpio/export ] ; then
   for val in ${GPIOPINOUT[@]} ; do
