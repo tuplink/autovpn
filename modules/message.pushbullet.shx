@@ -4,9 +4,6 @@ pushbullet_send(){
     curl -o /dev/null -s -u $PBKEY: https://api.pushbullet.com/v2/pushes -d type=note --data-urlencode "body=$1"
   else
     ERROR "PBKEY not set"
-    exit 1
+    check_config "PBKEY" "Pushbullet API key"
   fi
 }
-if [ "$1" == "help" ] ; then
-  echo "Must set PBKEY= in Config"
-fi
