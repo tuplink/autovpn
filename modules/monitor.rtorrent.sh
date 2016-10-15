@@ -19,13 +19,11 @@ monitor_rtorrent(){
     fi
   else
     INFO "TORRENTUSER and/or SCREENNAME not set"
-	MONITOR[rtorrent]=1
+    MONITOR[rtorrent]=1
+    check_config "TORRRENTUSER" "User rTorrent runs as"
+    check_config "SCREENNAME" "Name for a SCREEN session for rtorrent"
   fi
   status
 }
-if [ "$1" == "help" ] ; then
-  echo "Must set TORRENTUSER= in Config"
-  echo "Must set SCREENNAME= in Config"
-fi
 
 

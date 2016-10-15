@@ -14,10 +14,8 @@ monitor_mount(){
     fi
   else
     MONITOR[ad]=1
+    check_config "MOUNTCHECK" "Mount point to check on(/media/torrentdata)"
   fi
   status
 }
-if [ "$1" == "help" ] ; then
-  echo "Must set MOUNTCHECK= in Config"
-fi
 

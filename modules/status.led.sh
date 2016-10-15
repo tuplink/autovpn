@@ -36,4 +36,3 @@ if [ "$1" == "help" ] ; then
   echo "GPIO /sys/class/gpio/export is required to use this module"
   echo "add GPIOPINOUT['SERVICE']=11 to extras"
 fi
-

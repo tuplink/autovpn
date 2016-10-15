@@ -31,6 +31,7 @@ telegram_reply(){
     fi
   else
     ERROR "TELUSERID and/or TELKEY not set"
-    exit 1
+    check_config "TELUSERID" "Telagram User id(123453)"
+    check_config "TELKEY" "Telagram API Key(ks8234:1234jkluio89ksad8)"
   fi
 }

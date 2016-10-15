@@ -30,12 +30,10 @@ forward_pia(){
     fi
   else
     INFO "VPNIF and/or VPNPASS not set"
+    check_config "VPNIF" "VPN Interface name (tun0)"
+    check_config "VPNPASS" "VPN login file (/home/ubuntu/vpn.txt). line 1Username Line2 Password"
   fi
   status
 }
-if [ "$1" == "help" ] ; then
-  echo "Must set VPNIF= in Config"
-  echo "Must set VPNPASS= in Config"
-fi
 
 

@@ -17,10 +17,7 @@ monitor_ads(){
   else
     INFO "ADSCRIPT not set"
     MONITOR[ads]=1
+    check_config "ADSCRIPT" "Path to script to make hostname file for ad blocking (pihone/gravity.sh)"
   fi
   status
 }
-
-if [ "$1" == "help" ] ; then
-  echo "Must set ADSCRIPT= in Config"
-fi

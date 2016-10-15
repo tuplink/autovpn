@@ -20,14 +20,12 @@ forward_ssh(){
     fi
   else
     INFO "SSHKEY, SSHLOCALPORT, SSHREMOTEPORT, SSHHOST and/or SSHREMOTEUSER not set"
+    check_config "SSHKEY" "SSH tunnel key"
+    check_config "SSHLOCALPORT" "Local port number for reverse tunnel"
+    check_config "SSHREMOTEPORT" "Port number on remote host to connect to"
+    check_config "SSHHOST" "SSH tunnel host"
+    check_config "SSHREMOTEUSER" "SSH Remote username"
   fi
   status
 }
-if [ "$1" == "help" ] ; then
-  echo "Must set SSHKEY= in Config"
-  echo "Must set SSHLOCALPORT= in Config"
-  echo "Must set SSHREMOTEPORT= in Config"
-  echo "Must set SSHHOST= in Config"
-  echo "Must set SSHREMOTEUSER= in Config"
-fi
 

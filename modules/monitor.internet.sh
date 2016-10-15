@@ -19,12 +19,10 @@ monitor_internet(){
     else
       DEBUG "VPN internet not connected"
       MONITOR[VPN Internet]=1
+      check_config "TORRENTUSER" "User rTorrent runs as"
     fi
   fi
   status
 }
-if [ "$1" == "help" ] ; then
-  echo "Must set TORRENTUSER= in Config"
-fi
 
 

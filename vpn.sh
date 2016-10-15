@@ -22,27 +22,10 @@ LOCKFILE="$SELFDIR/vpn.pid"			#Script lock
 DISPLAYSHOW="14"                                #Log entrys to show
 LOGLEVEL="2"                                    #1 ERROR 2 INFO 3 DEBUG
 SCRIPT_LOG=/dev/null                            #path to log to
-#VPN
-VPNIF=""	                                #VPN IF
-VPNCF=""					#VPN config File
-VPNROUTE=""					#VPN route script
-VPNPASS=""					#VPN Password
 HOSTFILE="/etc/hosts"				#hostname file
 HOST="vpniphost"				#hostname for local lookups
 #AD BLOCKING
 ADSCRIPT="$SELFDIR/pihole/gravity.sh"		#PiHole Script
-#RTORRENT
-TORRENTUSER=""					#rTorrent User
-TORRENTPORT=""					#rTorrent port
-ENABLEDHT=""					#torrent DHT 1 yes 2 no
-SCREENNAME=""            			#Screen session name for rtorrent to run in
-MOUNTCHECK=""			     		#Storage Device
-#REVERSE TUNNEL ACCESS
-SSHKEY=""					#tunnle key
-SSHHOST=""					#tunnle host
-SSHREMOTEUSER=""				#tunnle user
-SSHLOCALPORT=""					#internal port for tunnle
-SSHREMOTEPORT=""				#external port for tunnle
 #ROUTING STUFF
 APIF="wlan9"					#Hotspot Interface
 LANIF="eth0"					#LAN Interface
@@ -50,11 +33,6 @@ APTOVPN="1"					#1 Hotspot over vpn 0 Hotspot over internet
 #AUTO CONNECT TO OPEN WIFI
 WIFIIF="wlan0"					#wifi for connecting to open wifi
 WIFISSID="xfinitywifi"				#SSID to connect to
-#DYNAMIC DNS (DUCKDNS)
-DUCKKEY=""					#DUCKDNS Key
-DUCKDOMAIN=""					#DUCKDNS DOMAIN (bob.duckdns.org)
-#Messaging
-PBKEY=""                                        #Pushbullet key
 
 ##########DO NOT EDIT BELOW THIS LINE##################
 declare -A GPIOPINOUT
@@ -92,9 +70,13 @@ while [ "`echo $1 | cut -c1`" = "-" ]; do
                                  exit
                                fi;;
     "--disable"              ) if [ -a "$SELFDIR/modules/$2.sh" ] ; then
-                                 echo "Disabling $2"
-                                 mv $SELFDIR/modules/$2.sh $SELFDIR/modules/$2.shx
-                                 exit 1
+                                 if [ $2 == "monitor.internet" ] || [ $2 == "monitor.vpn" ] ; then
+                                   echo "You can not disable $2"
+                                 else
+                                   echo "Disabling $2"
+                                   mv $SELFDIR/modules/$2.sh $SELFDIR/modules/$2.shx
+                                   exit 1
+                                 fi
                                elif [ -a "$SELFDIR/modules/$2.shx" ] ; then
                                  echo "Module already disabled"
                                  exit 0
@@ -104,7 +86,9 @@ while [ "`echo $1 | cut -c1`" = "-" ]; do
                                fi;;
     "--list"                ) echo "Enabled"
                               for f in $SELFDIR/modules/*.*.sh; do
-                                echo "  "$(basename "${f%.*}")
+                                if [ $(basename "${f%.*}") != "monitor.internet" ] && [ $(basename "${f%.*}") != "monitor.vpn" ] ; then
+                                  echo "  "$(basename "${f%.*}")
+                                fi
                               done
                               echo "Available"
                               for f in $SELFDIR/modules/*.*.shx; do

@@ -13,11 +13,8 @@ dynamic_dns_duckdns(){
     fi
   else
     ERROR "DUCKDOMAIN, DUCKKEY and/or TORRENTUSER not set"
-    exit 1
+    check_config "DUCKKEY" "DUCKDNS Key"
+    check_config "DUCKDOMAIN" "DUCKDNS Domain (bob.duckdns.org)"
+    check_config "TORRENTUSER" "User rTorrent runs as"
   fi
 }
-if [ "$1" == "help" ] ; then
-  echo "Must set DUCKKEY= in Config"
-  echo "Must set DUCKDOMAIN= in Config"
-  echo "Must set TORRENTUSER= in config"
-fi
