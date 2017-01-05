@@ -2,8 +2,8 @@
 forward_pia(){
   DEBUG "Checking if we need to run port forward script"
   if [ -n $VPNIF ] && [ -n $VPNPASS ] ; then
-    if [ ${MONITOR[VPN Internet]} -ge 3 ] ; then
-      if [ "$PORTFOR" != $(date +%H) ] ; then
+    if [ "$PORTFOR" != $(date +%H) ] ; then
+      if [ ${MONITOR[VPN Internet]} -ge 3 ] ; then
         PORT=$($SELFDIR/portforward/port_forward.sh -f $VPNPASS -i $VPNIF -s)
         if [[ $PORT =~ ^-?[0-9]+$ ]] ; then
           PORTFOR=$(date +%H)
@@ -35,5 +35,3 @@ forward_pia(){
   fi
   status
 }
-
-
