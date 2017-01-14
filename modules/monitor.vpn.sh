@@ -4,6 +4,8 @@ monitor_vpn_firewall(){
   if [ "$FWSET" != "1" ] ; then
     DEBUG "Enabeling IP Forwardig"
     echo 1 > /proc/sys/net/ipv4/ip_forward
+    echo 0 > /proc/sys/net/ipv4/conf/all/rp_filter
+    echo 0 > /proc/sys/net/ipv4/conf/default/rp_filter
     #ASYNC Routing enable
     if [ -z $ASYNC ] ; then
       ASYNC=1
