@@ -10,12 +10,12 @@ monitor_rtorrent(){
         INFO "rTorrent is running."
         MONITOR[rtorrent]=3
         torrentslow=$(cat $GPIOPINBANDWITH)
-        if [[ $torrentslow -eq 0 ]] && [[ $slow -ne 1 ]] ; then
+        if [[ $torrentslow -ne 0 ]] && [[ $slow -ne 1 ]] ; then
           xmlrpc localhost throttle.global_down.max_rate.set_kb "" 1
           INFO "rTorrent Slowed Down"
           slow=1
           fast=0
-        else
+        elif [[ $torrentslow -eq 0 ]] && [[ $fast -ne 1 ]] ; then
           xmlrpc localhost throttle.global_down.max_rate.set_kb "" 1024
           INFO "rTorrent Speed Up"
           slow=0
@@ -27,7 +27,7 @@ monitor_rtorrent(){
         stty start undef 2>/dev/null
         su $TORRENTUSER -c "screen -A -dmS $SCREENNAME /usr/local/bin/rtorrent"
         MONITOR[rtorrent]=2
-        slow=1
+        slow=0
         fast=0
       fi
     fi

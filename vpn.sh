@@ -34,6 +34,8 @@ APTOVPN="1"					#1 Hotspot over vpn 0 Hotspot over internet
 WIFIIF="wlan0"					#wifi for connecting to open wifi
 WIFISSID="xfinitywifi"				#SSID to connect to
 
+GPIOPINBANDWITH=/home/ubuntu/autovpn/rtorrentslow
+
 ##########DO NOT EDIT BELOW THIS LINE##################
 declare -A GPIOPINOUT
 declare -A MONITOR

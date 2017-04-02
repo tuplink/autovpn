@@ -92,7 +92,7 @@ monitor_vpn(){
       MONITOR[vpn]=2
       openvpn --daemon --config "$VPNCF" --writepid "$SELFDIR/openvpn.pid" --auth-user-pass "$VPNPASS" --route-nopull --route-up "$VPNROUTE" --script-security 2
       #WAIT FOR CONNECTION
-      SLEEP 5
+      SLEEP 15
       VPNIP=$(ifconfig $VPNIF 2>/dev/null | awk '/inet addr/{print substr($2,6)}')
       if [[ -z "$VPNIP" ]]; then
         MONITOR[vpn]=1
