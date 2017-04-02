@@ -8,13 +8,25 @@ monitor_rtorrent(){
       TESTSCREEN=$(su $TORRENTUSER -c 'screen -ls | egrep "[0-9]+.$SCREENNAME"')
       if [[ -n "$TESTSCREEN" ]]; then
         INFO "rTorrent is running."
-	  MONITOR[rtorrent]=3
+        MONITOR[rtorrent]=3
+        torrentslow=$(cat $GPIOPINBANDWITH)
+        if [[ $torrentslow -eq 0 ]] && [[ $slow -ne 1 ]] ; then
+          xmlrpc localhost throttle.global_down.max_rate.set_kb "" 1
+          slow=1
+          fast=0
+        else
+          xmlrpc localhost throttle.global_down.max_rate.set_kb "" 1024
+          slow=0
+          fast=1
+        fi
       else
         INFO "Starting rTorrent"
         stty stop undef 2>/dev/null
         stty start undef 2>/dev/null
         su $TORRENTUSER -c "screen -A -dmS $SCREENNAME /usr/local/bin/rtorrent"
         MONITOR[rtorrent]=2
+        slow=1
+        fast=0
       fi
     fi
   else
