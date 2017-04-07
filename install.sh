@@ -65,4 +65,5 @@ setup_all(){
 # add MENU SYSTEM
 
 
+setup_all
 exit 1
