@@ -34,7 +34,15 @@ APTOVPN="1"					#1 Hotspot over vpn 0 Hotspot over internet
 WIFIIF="wlan0"					#wifi for connecting to open wifi
 WIFISSID="xfinitywifi"				#SSID to connect to
 
-GPIOPINBANDWITH=/home/ubuntu/autovpn/rtorrentslow
+
+#GPIOPINOUT[Public Internet]=4			#Public Internet LED
+#GPIOPINOUT[VPN Internet]=17			#VPN Internet LED
+#GPIOPINOUT[vpn]=27				#OpenVPN Running LED
+#GPIOPINOUT[rtorrent]=22				#rTorrent Runntin LED
+#GPIOPINOUT[ssh]=23				#SSH Tunnle LED
+#GPIOPINOUT[wifi]=24				#WiFi Connected LED
+
+#GPIOPINBANDWITH=25				#rTorrent Throttle Switch
 
 ##########DO NOT EDIT BELOW THIS LINE##################
 declare -A GPIOPINOUT

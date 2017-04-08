@@ -56,7 +56,7 @@ SYSTEM(){
   timeAndDate=`date "+%m/%d/%y %H:%M:%S"`
   DISPLAY "[$timeAndDate] [SYSTEM] $msg$"
   echo "[$timeAndDate] [SYSTEM] $msg" >> $SCRIPT_LOG
-  logger"[$timeAndDate] [VPN.sh] $msg"
+  logger "[$timeAndDate] [VPN.sh] $msg"
 }
 
 ERROR(){
