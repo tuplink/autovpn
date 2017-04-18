@@ -42,7 +42,7 @@ WIFISSID="xfinitywifi"				#SSID to connect to
 #GPIOPINOUT[ssh]=23				#SSH Tunnle LED
 #GPIOPINOUT[wifi]=24				#WiFi Connected LED
 
-#GPIOPINBANDWITH=25				#rTorrent Throttle Switch
+#GPIOPINBANDWITH=25				#rTorrent Throttle Switch w/10k
 
 ##########DO NOT EDIT BELOW THIS LINE##################
 declare -A GPIOPINOUT
