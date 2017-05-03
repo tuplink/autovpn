@@ -9,6 +9,9 @@ monitor(){
   if [ -n "$(declare -f -F monitor_usbnet)" ] ; then
     monitor_usbnet
   fi
+  if [ -n "$(declare -f -F monitor_btnet)" ] ; then
+    monitor_btnet
+  fi
   if [ -n "$(declare -f -F monitor_wifi)" ] ; then
     monitor_wifi
   fi
