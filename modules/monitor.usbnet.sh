@@ -11,7 +11,7 @@ monitor_usbnet(){
       DEBUG "Getting pid of dhclient"
       DHCLIENT=$(pidof dhclient usb0)
       if [[ $DHCLIENT != "" ]] ; then
-        INFO "Killing dhclient"
+        INFO "Killing dhclient(USB)"
         kill $DHCLIENT
       fi
       DEBUG "Starting dhclient"

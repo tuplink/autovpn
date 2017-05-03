@@ -11,7 +11,7 @@ monitor_wired(){
       DEBUG "Getting pid of dhclient"
       DHCLIENT=$(pidof dhclient eth0)
       if [[ $DHCLIENT != "" ]] ; then
-        INFO "Killing dhclient"
+        INFO "Killing dhclient(Wired)"
         kill $DHCLIENT
       fi
       DEBUG "Starting dhclient"

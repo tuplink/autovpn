@@ -16,7 +16,7 @@ monitor_wifi_connect(){
   DEBUG "Getting pid of dhclient"
   DHCLIENT=$(pidof dhclient $WIFIIF)
   if [[ $DHCLIENT != "" ]] ; then
-    INFO "Killing dhclient"
+    INFO "Killing dhclient(WIFI)"
     kill $DHCLIENT
   fi
   INFO "Bringing $WIFIIF interface up"
