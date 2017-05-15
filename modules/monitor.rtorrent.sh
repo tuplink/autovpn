@@ -8,12 +8,12 @@ monitor_rtorrent_speed(){
     fi
     torrentslow=$(cat /sys/class/gpio/gpio$GPIOPINBANDWITH/value)
     if [[ $torrentslow -ne 1 ]] && [[ $slow -ne 1 ]] ; then
-      xmlrpc localhost throttle.global_down.max_rate.set_kb "" 1
+      xmlrpc 127.0.0.1 throttle.global_down.max_rate.set_kb "" 1
       INFO "rTorrent Slowed Down"
       slow=1
       fast=0
     elif [[ $torrentslow -eq 1 ]] && [[ $fast -ne 1 ]] ; then
-      xmlrpc localhost throttle.global_down.max_rate.set_kb "" 1024
+      xmlrpc 127.0.0.1 throttle.global_down.max_rate.set_kb "" 1024
       INFO "rTorrent Speed Up"
       slow=0
       fast=1

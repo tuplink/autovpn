@@ -1,22 +1,24 @@
 #!/bin/bash
 MONITOR[ssh]=0
 forward_ssh(){
-  if [ -n $SSHKEY ] && [ -n $SSHLOCALPORT ] && [ -n $SSHREMOTEPORT ] && [ -n $SSHHOST ] && [ -n $SSHREMOTEUSER ]; then
-    DEBUG "Checking status of Reverse Tunnel"
-    SSHPID=$(pgrep -f 'ssh -o ConnectTimeout=10')
-    if [ -z "$SSHPID" ]; then
-      INFO "Starting SSH Tunnel"
-      if ssh -o ConnectTimeout=10 -o ExitOnForwardFailure=yes -fN -i $SSHKEY $SSHREMOTEUSER@$SSHHOST -R $SSHREMOTEPORT:*:$SSHLOCALPORT  > /dev/null 2>&1; then
-        MONITOR[ssh]=2
-        INFO "SSH tunnel established"
-        send_msg "http://$SSHHOST:$SSHREMOTEPORT Forwarded to $SSHLOCALPORT"
+  if [ -n $SSHKEY ] && [ -n $SSHLOCALPORT ] && [ -n $SSHREMOTEPORT ] && [ -n $SSHHOST ] && [ -n $SSHREMOTEUSER ] ; then
+    if [  ${MONITOR[Public Internet]} -ge 3  ] ; then 
+      DEBUG "Checking status of Reverse Tunnel"
+      SSHPID=$(pgrep -f 'ssh -o ConnectTimeout=10')
+      if [ -z "$SSHPID" ]; then
+        INFO "Starting SSH Tunnel"
+        if ssh -o ConnectTimeout=10 -o ExitOnForwardFailure=yes -o ServerAliveInterval=30 -fN -i $SSHKEY $SSHREMOTEUSER@$SSHHOST -R $SSHREMOTEPORT:*:$SSHLOCALPORT  > /dev/null 2>&1; then
+          MONITOR[ssh]=2
+          INFO "SSH tunnel established"
+          send_msg "http://$SSHHOST:$SSHREMOTEPORT Forwarded to $SSHLOCALPORT"
+        else
+          MONITOR[ssh]=1
+          ERROR "SSH tunnel failed"
+        fi
       else
-        MONITOR[ssh]=1
-        ERROR "SSH tunnel failed"
+        MONITOR[ssh]=3
+        DEBUG "Reverse tunnel is up"
       fi
-    else
-      MONITOR[ssh]=3
-      DEBUG "Reverse tunnel is up"
     fi
   else
     INFO "SSHKEY, SSHLOCALPORT, SSHREMOTEPORT, SSHHOST and/or SSHREMOTEUSER not set"
@@ -26,6 +28,6 @@ forward_ssh(){
     check_config "SSHHOST" "SSH tunnel host"
     check_config "SSHREMOTEUSER" "SSH Remote username"
   fi
-  status
+    status
 }
 

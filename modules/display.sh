@@ -46,7 +46,7 @@ function DISPLAY(){
     DISPLAYNUM=${#MSG[@]}
     DISPLAYSTART=$[$DISPLAYNUM-$DISPLAYSHOW]
     printf '%s\n' "${MSG[@]:$DISPLAYSTART:$DISPLAYSHOW}"
-    echo "Please select and option"
+    echo "Please select an option"
   fi
 }
 

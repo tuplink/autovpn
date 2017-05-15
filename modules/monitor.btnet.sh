@@ -1,5 +1,10 @@
 #!/bin/bash
 MONITOR[btnet]=0
+echo "Initilizing Bluetooth for rPI"
+#hciattach /dev/ttyAMA0 bcm43xx 921600 noflow -
+hciattach /dev/ttyAMA0 bcm43xx 115200 noflow -
+hciconfig hci0 up
+systemctl restart bluetooth
 monitor_btnet(){
   if [ "${MONITOR[Public Internet]}" -le 1 ] ; then
     #NO INTERNET
