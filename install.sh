@@ -45,8 +45,8 @@ After=network.target
 Type=simple
 KillMode=none
 WorkingDirectory=$SELFDIR/
-ExecStart=$SELFDIR/vpn.sh -q -f
-ExecReload=$SELFDIR/vpn.sh -q -f
+ExecStart=$SELFDIR/autovpn.sh -q -f
+ExecReload=$SELFDIR/autovpn.sh -q -f
 KillMode=process
 Restart=on-failure
 

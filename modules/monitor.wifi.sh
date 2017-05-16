@@ -34,7 +34,7 @@ monitor_wifi_connect(){
   fi
   INFO "Bringing $WIFIIF interface up"
   ifconfig $WIFIIF up
-  if [ "$2" = "OPEN" ] ; then
+  if [ "$2" = "OPEN" ] || [ "$2" = "LYNX" ]; then
     DEBUG "Attempting to connect to $1"
     local CONNECT=$(iw dev $WIFIIF connect -w $1)
     if [[ $CONNECT == *fail* ]]; then
@@ -44,6 +44,9 @@ monitor_wifi_connect(){
       AP=$(echo $CONNECT | grep -o -E '([[:xdigit:]]{1,2}:){5}[[:xdigit:]]{1,2}')
       INFO "Connected to ($AP) $1"
       monitor_wifi_connect_ip
+      if [ "$2" = "LYNX" ] ; then
+        INFO "Replaying LYNX($3) WIP"
+      fi
     fi
   elif [ "$2" = "WPA2" ] ; then
     INFO "Connecting to $1 with WPA2"
@@ -54,7 +57,6 @@ monitor_wifi_connect(){
     iwconfig $WIFIIF essid "$1"
     SLEEP 2
     INFO "Running WPA_SUP"
-    killall wpa_supplicant
     wpa_supplicant -B -i$WIFIIF -c/etc/wpa_supplicant.conf
     monitor_wifi_connect_ip
   elif [ "$2" = "WEP"] ; then
@@ -73,6 +75,7 @@ monitor_wifi_connect(){
 monitor_wifi_scan(){
   unset wlanlist
   declare -A wlanlist
+  killall wpa_supplicant
   x=0
   ifconfig $WIFIIF up
   for line in $(iwlist $WIFIIF scan | grep ESSID: | cut -d":" -f 2); do
