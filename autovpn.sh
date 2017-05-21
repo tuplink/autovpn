@@ -18,7 +18,7 @@ SELF=${BASH_SOURCE[0]}
 SELFDIR="$( cd "$( dirname "$SELF" )" && pwd )"
 ##
 #####SET DEFAULTS####
-LOCKFILE="$SELFDIR/vpn.pid"			#Script lock
+LOCKFILE="$SELFDIR/autovpn.pid"			#Script lock
 DISPLAYSHOW="14"                                #Log entrys to show
 LOGLEVEL="2"                                    #1 ERROR 2 INFO 3 DEBUG
 SCRIPT_LOG=/dev/null                            #path to log to
@@ -67,6 +67,7 @@ while [ "`echo $1 | cut -c1`" = "-" ]; do
   case "$1" in
     "--quiet"|"-q"           ) QUIET=1;shift 1;;
     "--force"|"-f"           ) FORCE=1;shift 1;;
+    "--wifi"|"-w"            ) shift 1; echo "WPA adding WIFI Network to WPA_Supplicant file";;
     "--enable"               ) if [ -a "$SELFDIR/modules/$2.shx" ] ; then
                                   echo "Enabling $2"
                                   mv $SELFDIR/modules/$2.shx $SELFDIR/modules/$2.sh
