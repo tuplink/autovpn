@@ -88,6 +88,7 @@ monitor_vpn(){
         INFO "Killing OpenVPN process ($VPNPID)"
         kill -9 $VPNPID
       fi
+      ntpdate 0.ubuntu.pool.ntp.org
       INFO "Starting VPN"
       MONITOR[vpn]=2
       openvpn --daemon --config "$VPNCF" --writepid "$SELFDIR/openvpn.pid" --auth-user-pass "$VPNPASS" --route-nopull --route-up "$VPNROUTE" --script-security 2
