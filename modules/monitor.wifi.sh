@@ -34,7 +34,7 @@ monitor_wifi_connect(){
   fi
   INFO "Bringing $WIFIIF interface up"
   ifconfig $WIFIIF up
-  if [ "$2" = "OPEN" ] || [ "$2" = "LYNX" ]; then
+  if [ "$2" = "OPEN" ] || [ "$2" = "LYNX" ] || [ "$2" = "CURL" ]; then
     DEBUG "Attempting to connect to $1"
     local CONNECT=$(iw dev $WIFIIF connect -w $1)
     if [[ $CONNECT == *fail* ]]; then
@@ -45,7 +45,14 @@ monitor_wifi_connect(){
       INFO "Connected to ($AP) $1"
       monitor_wifi_connect_ip
       if [ "$2" = "LYNX" ] ; then
-        INFO "Replaying LYNX($3) WIP"
+        if [ -s $3 ] ; then
+          INFO "Replaying LYNX($3) WIP"
+          lynx -cmd_script=$3
+        else
+          ERROR "Lynx Replay: $3 NOT FOUND"
+        fi
+      elif [ "$2" = "CURL" ] ; then
+        curl -s --max-time 15 $3
       fi
     fi
   elif [ "$2" = "WPA2" ] ; then
@@ -129,6 +136,7 @@ monitor_wifi_scan(){
 monitor_wifi(){
   if [ -n $WIFIIF ]; then
     if [ "${MONITOR[Public Internet]}" -le 1 ] ; then
+      ifconfig $WIFIIF up
       #NO INTERNET
       DEBUG "System has no internet"
       DEBUG "checking if $WIFIIF is present"
