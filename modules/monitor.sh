@@ -3,6 +3,9 @@ monitor(){
   if [ -n "$(declare -f -F monitor_internet)" ] ; then
     monitor_internet
   fi
+  if [ -n "$(declare -f -F monitor_time)" ] ; then
+    monitor_time
+  fi
   if [ -n "$(declare -f -F monitor_wired)" ] ; then
     monitor_wired
   fi
@@ -26,9 +29,6 @@ monitor(){
   fi
   if [ -n "$(declare -f -F monitor_ads)" ] ; then
     monitor_ads
-  fi
-  if [ -n "$(declare -f -F monitor_time)" ] ; then
-    monitor_time
   fi
   ## IF ALL Monitors are good then sleep for 15
   for key in "${!MONITOR[@]}" ; do
